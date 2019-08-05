@@ -6,7 +6,7 @@ Blueprint para la creación de APIs con Flask
 
 Este proyecto esta fuertemente inspirado por los siguientes recursos:
 
-- [Talk "Flask for Fun and Profit", Armin Ronacher, PyBay2016, YouTube](Armin Ronacher, "Flask for Fun and Profit", PyBay2016)
+- [Talk "Flask for Fun and Profit", Armin Ronacher, PyBay2016, YouTube](https://www.youtube.com/watch?v=1ByQhAM5c1I)
   - [Slides deck](https://speakerdeck.com/mitsuhiko/flask-for-fun-and-profit?slide=42)
 - [Blog "Flask best practises", AJ Pryor, http://alanpryorjr.com](http://alanpryorjr.com/2019-05-20-flask-api-example/)
 
