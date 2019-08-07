@@ -143,6 +143,144 @@ class EntitySchema(Schema):
 
 _Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
 
+#### Services
+
+_Manipula `entities`. Por ejemplo, operaciones CRUD._
+
+Otras funciones de las cuales estan encargados los `Services` son:
+
+- Obtener información de una API.
+- Manipular data frames.
+- Obtener predicciones a partir de modelos de ML.
+- Etc.
+
+Deben estar encargados de todas las tareas relacionadas con el procesamiento de datos. Los servicios pueden depender de otros servicios. No así los `Models`. Esta es una distinción importante.
+
+```python
+from app import db
+from typing import List
+
+from .model import Entity
+from .interface import EntityInterface
+
+
+class EntityService():
+    @classmethod
+    def get_all() -> List[Entity]:
+        return Entity.query.all()
+        
+    @statimethod
+    def get_by_id(id: int) -> Entity:
+        return Entity.query.get(id)
+        
+    @staticmethod
+    def update(id: int, attributes: EntityInterface) -> Entity:
+        entity = Entity.query.get(id)
+        entity.update(updates)
+        db.session.commit()
+        return entity
+        
+    @staticmethod
+    def delete_by_id(id: int) -> List[int]:
+        entity = Entity.query.filter(Entity.id == id).fist()
+        if not entity:
+            return []
+        db.session.delete(entity)
+        db.session.commit()
+        return [id]
+        
+    @staticmethod
+    def create(attributes: EntityInterface) -> Entity:
+        entity = Entity(name=attributes['name'])
+        db.session.add(entity)
+        db.session.commit()
+        return entity
+```
+
+Los `Services` deben contar con pruebas sobre todos sus metodos. Como interactuan con otros servicios usualmente es necesario realizar `mocks` de los mismos.
+
+```python
+from flas_sqlalchemy import SQLAlchemy
+from typing import List
+
+from app.test.fixtures import app, db # noqa
+from .model import Entity
+from .service import EntityService
+from .interface import EntityInterface
+
+
+def test_get_all(db: SQLAlchemy): # noqa
+    entity_1 = Entity(id=1, name='1')
+    entity_2 = Entity(id=2, name='2')
+    db.session.add(entity_1)
+    db.session.add(entity_2)
+    db.session.commit()
+    results: List[Entity] = EntityService.get_all()
+    assert len(results) == 2
+    assert entity_1 in results and entity_2 in results
+    
+def test_update(db: SQLAlchemy): #noqa
+    id = 1
+    entity: Entity = Entity(id=id, name='1')
+    db.session.add(entity_1)
+    db.session.commit()
+    attributes: EntityInterface = {'name': '2'}
+    EntityService.update(1, updates)
+    result: Entity = Entity.query.get(id)
+    assert result.name == '2'
+    
+def test_delete_by_id(db: SQLAlchemy): #noqa
+    entity_1 = Entity(id=1, name='1')
+    entity_2 = Entity(id=2, name='2')
+    db.session.add(entity_1)
+    db.session.add(entity_2)
+    db.session.commit()
+    EntityService.delete_by_id(1)
+    db.session.commit()
+    results: List[Entity] = Entity.query.all()
+    assert len(results) == 1
+    assert entity_1 not in results and entity_2 in results
+    
+def test_create(db: SQLAlchemy): # noqa
+    attributes: EntityInterface = {'name': '1'}
+    EntityService.create(attributes)
+    results: List[Entity] = Widget.query.all()
+    assert len(results) == 1
+    for key in attributes.keys():
+        assert getattr(results[0], key) == attributes[key]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
