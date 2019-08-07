@@ -250,9 +250,97 @@ def test_create(db: SQLAlchemy): # noqa
         assert getattr(results[0], key) == attributes[key]
 ```
 
+#### Controller
+
+_Orquesta las rutas, servicios y esquemas de la `entity`._
+
+Además, podemos utilizar `flask-restplus` para documentar la API con Swagger.
+
+```python
+from flask import request
+from flask_accepts import accepts, responds
+from flask_restplus import Namespace, Resource
+from flask.wrappers import Response
+from typing import List
+
+from .schema import EntitiySchema
+from .service import EntityService
+from .model import Entity
+from .interface import EntityInterface
+
+api = Namespace('Entity', description='Single namespace, single entity')
 
 
+@api.route('/')
+class EntityResource(Resource):
+    """ Entity Resource """
+    
+    @responds(schema=EntitySchema, many=True)
+    def get(self) -> List[Entity]:
+        """ Get all entities """
+        return EntityService.get_all()
+        
+    @accepts(schema=EntitySchema, api=api)
+    @responds(schema=EntitySchema)
+    def post(self) -> Entity:
+        """ Create a single Entity """
+        return EntityService.create(request.parsed_obj)
+        
+@api.route('/<int:id>')
+@api.param('id', 'Entity ID')
+class EntityIdResource(Resource):
+    """ Entity ID Resource """
+    
+    @responds(schema=EntitySchema)
+    def get(self, id: int) -> Entity:
+        """ Get a single Entity """
+        return EntityService.get_by_id(id)
+        
+    def delete(self, id: int) -> Response:
+        """ Delete a single Entity """
+        from flask import jsonify
+        id = WidgetService.delete_by_id(id)
+        return jsonify({ 'status: 'success', 'id': id })
+        
+    @accepts(schema=EntitySchema, api=api)
+    @responds(schema=EntitySchema)
+    def put(self, id: int) -> Entity:
+        """ Update a single Entity """
+        return EntityService.update(id, request.parsed_obj)
+```
 
+> `request.parsed_object` es creado por el docorador `accepts` de `flask_accepts`. El mismo consume el esquema, y se encarga de deserializar el cuerpo para convertirlo a un diccionario valido que podemos usar luego en nuestros `Services`.
+
+Para testear los controladores tendremos que construir un `mock` del `Service`. Esto es para mantener las priebas del `Controller` aisladas del `Service`.
+
+```python
+from unittest.mock import patch
+from flask.testing import FlaskClient
+
+from app.test.fixtures import client, app # noqa
+from .service import EntityService
+from .schema import EntitySchema
+from .model import Entity
+from .interface import EntityInterface
+from . import BASE_ROUTE
+
+def make_entity(id: int = 123, name: str = 'Test Entity') -> Entity:
+    return Entity(id=id, name=name)
+    
+class TestEntityResource:
+    @patch.object(EntityService, 'get_all',
+                  lambda: [make_entity(123, name='Test Entity 1'),
+                           make_entity(124, name='Test Entity 2')])
+    def test_get(self, client: FlaskClient): #noqa
+        with client:
+            results = client.get(f'/api/{BASE_ROUTE}', follow_redirects=True).get_json()
+            expected = EntitySchema(many=True).dump(
+                [make_entity(123, name='Test Entity 1'),
+                 make_entity(124, name='Test Entity 2')]
+            ).data
+            for r in results:
+                assert r in expected
+```
 
 
 
