@@ -19,6 +19,7 @@ Blueprint para la creación de APIs con Flask
 - [Fixtures](#fixtures)
 - [Run `dev`](#run)
 - [Tests](#test)
+- [Swagger](#swagger)
 
 ## Inspiración<a name="inspiration"></a>
 
