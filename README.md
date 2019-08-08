@@ -2,7 +2,11 @@
 
 Blueprint para la creación de APIs con Flask
 
-## Inspiración
+## Indice
+
+- [Inspiración](#inspiration)
+
+## Inspiración<a name="inspiration"></a>
 
 Este proyecto esta fuertemente inspirado por los siguientes recursos:
 
@@ -23,9 +27,7 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
 - [`flask-restplus`](https://flask-restplus.readthedocs.io/en/stable/)
 - [`flask_accepts`](https://github.com/apryor6/flask_accepts)
 
-## Notas
-
-### Estructura
+## Estructura
 
 Todos los archivos que estén relacionados por un mismo topico, deben pertenecer al mismo modulo. No se crean carpetas de `controllers`, `models`, etc.
 
@@ -56,7 +58,7 @@ La estructura final será similar a la siguiente:
   service_test.py
 ```
 
-#### ¿Nombres en singular o plural?
+### ¿Nombres en singular o plural?
 
 Es importante notar que el nombre de la `entity` esta en singular. Esto es porque todos los lenguajes ya tienen una forma nativa de definir una lista de elementos, como un `array` o una `tupla`. Todos los demás recursos también se nombrarán en singular.
 
@@ -67,7 +69,7 @@ Cuando se tenga que nombrar una `entity` en un sistema que no cuente con una abs
 - En SQL cuando se quiere referenciar una tabla.
 - Al crear las rutas de una `entity`
 
-#### `Model`
+### `Model`
 
 _Representación de Python de la `entity`._
 
@@ -97,7 +99,7 @@ def test_Entity_create(entity: Entity):
     assert entity
 ```
 
-#### `Interface`
+### `Interface`
 
 _Define los tipos que conforman la `entity`._
 
@@ -125,7 +127,7 @@ class EntityInterface(TypeDict, total=False):
 
 _Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
 
-#### `Schemas`
+### `Schemas`
 
 _Serializa y deserializa `entities`._
 
@@ -143,7 +145,7 @@ class EntitySchema(Schema):
 
 _Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
 
-#### Services
+### Services
 
 _Manipula `entities`. Por ejemplo, operaciones CRUD._
 
@@ -250,7 +252,7 @@ def test_create(db: SQLAlchemy): # noqa
         assert getattr(results[0], key) == attributes[key]
 ```
 
-#### Controller
+### Controller
 
 _Orquesta las rutas, servicios y esquemas de la `entity`._
 
