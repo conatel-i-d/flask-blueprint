@@ -17,6 +17,7 @@ Blueprint para la creación de APIs con Flask
   - [Declaración de rutas](#route_declaration)
 - [`create_app`](#create_app)
 - [Fixtures](#fixtures)
+- [Run](#run)
 
 ## Inspiración<a name="inspiration"></a>
 
