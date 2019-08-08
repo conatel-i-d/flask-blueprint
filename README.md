@@ -17,7 +17,8 @@ Blueprint para la creación de APIs con Flask
   - [Declaración de rutas](#route_declaration)
 - [`create_app`](#create_app)
 - [Fixtures](#fixtures)
-- [Run](#run)
+- [Run `dev`](#run)
+- [Tests](#test)
 
 ## Inspiración<a name="inspiration"></a>
 
@@ -517,7 +518,13 @@ Para correr la aplicación en modo desarrollo utilizamos el siguiente comando:
 FLASK_ENV=development flask run --port 8000
 ```
 
+## Tests<a name="tests"></a>
 
+Para correr las pruebas utilizaremos `pytest`. Desde la `cli` solo es necesario utilizar este comando:
+
+```
+pytes
+```
 
 
 
