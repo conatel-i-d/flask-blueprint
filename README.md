@@ -5,6 +5,18 @@ Blueprint para la creación de APIs con Flask
 ## Indice
 
 - [Inspiración](#inspiration)
+- [Consideraciones](#considerations)
+- [Librerías](#libraries)
+- [Estructura](#structure)
+  - [Convención de nombres](#naming_convention)
+  - [`Model`](#model)
+  - [`Interface`](#interface)
+  - [`Schema`](#schema)
+  - [`Service`](#service)
+  - [`Controller`](#controller)
+  - [Declaración de rutas](#route_declaration)
+- [`create_app`](#create_app)
+- [Fixtures](#fixtures)
 
 ## Inspiración<a name="inspiration"></a>
 
@@ -14,11 +26,11 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
   - [Slides deck](https://speakerdeck.com/mitsuhiko/flask-for-fun-and-profit?slide=42)
 - [Blog "Flask best practises", AJ Pryor, http://alanpryorjr.com](http://alanpryorjr.com/2019-05-20-flask-api-example/)
 
-## Potenciales problemas
+## Consideraciones<a name="considerations"></a>
 
 - Utiliza la librería [`flask_accepts`](https://github.com/apryor6/flask_accepts) que tiene pocos usuarios. De todas maneras el codigo es simple, y no debería ser dificil de solucionar en caso de que ocurran bugs. 
 
-## Librerías
+## Librerías<a name="library"></a>
 
 - [`flask`](https://palletsprojects.com/p/flask/)
 - [`pytest`](https://docs.pytest.org/en/latest/)
@@ -26,8 +38,9 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
 - [`sqlalchemy`](https://www.sqlalchemy.org/)
 - [`flask-restplus`](https://flask-restplus.readthedocs.io/en/stable/)
 - [`flask_accepts`](https://github.com/apryor6/flask_accepts)
+- [`flask_scripts`](https://flask-script.readthedocs.io/en/latest/)
 
-## Estructura
+## Estructura<a name="structure"></a>
 
 Todos los archivos que estén relacionados por un mismo topico, deben pertenecer al mismo modulo. No se crean carpetas de `controllers`, `models`, etc.
 
@@ -58,7 +71,7 @@ La estructura final será similar a la siguiente:
   service_test.py
 ```
 
-### ¿Nombres en singular o plural?
+### Convención de nombres<a name="naming_convention"></a>
 
 Es importante notar que el nombre de la `entity` esta en singular. Esto es porque todos los lenguajes ya tienen una forma nativa de definir una lista de elementos, como un `array` o una `tupla`. Todos los demás recursos también se nombrarán en singular.
 
@@ -69,7 +82,7 @@ Cuando se tenga que nombrar una `entity` en un sistema que no cuente con una abs
 - En SQL cuando se quiere referenciar una tabla.
 - Al crear las rutas de una `entity`
 
-### `Model`
+### `Model`<a name="model"></a>
 
 _Representación de Python de la `entity`._
 
@@ -99,7 +112,7 @@ def test_Entity_create(entity: Entity):
     assert entity
 ```
 
-### `Interface`
+### `Interface`<a name="interface"></a>
 
 _Define los tipos que conforman la `entity`._
 
@@ -127,7 +140,7 @@ class EntityInterface(TypeDict, total=False):
 
 _Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
 
-### `Schemas`
+### `Schemas`<a name="schemas"></a>
 
 _Serializa y deserializa `entities`._
 
@@ -145,7 +158,7 @@ class EntitySchema(Schema):
 
 _Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
 
-### Services
+### Services<a name="services"></a>
 
 _Manipula `entities`. Por ejemplo, operaciones CRUD._
 
@@ -252,7 +265,7 @@ def test_create(db: SQLAlchemy): # noqa
         assert getattr(results[0], key) == attributes[key]
 ```
 
-### Controller
+### Controller<a name="controller"></a>
 
 _Orquesta las rutas, servicios y esquemas de la `entity`._
 
@@ -344,17 +357,164 @@ class TestEntityResource:
                 assert r in expected
 ```
 
+### Declaración de rutas <a name="route_declaration"></a>
+
+Lo último que queda definir es como se terminan registrando las rutas en la API. La siguiente forma muestra como hacerlo evitando problemas de importaciones circulares.
+
+Definimos dentro de cada carpeta de entidad la configuración de las rutas en el archivo `./app/entity/__init__.py`.
+
+```python
+from .model import Entity #noqa
+from .schema import WidgetSchema # noqa
+
+BASE_ROUTE = 'entity'
+
+def register_routes(api, app, root='api'):
+    """ Registramos las rutas definidas en la `api` del `Controller` """
+    from .controller import api as entity_api
+    api.add_namespace(entity_api, path=f'/{root}/{BASE_ROUTE}')
+```
+
+Desde otro archivo importaremos esta función, y la llamaremos con el objeto `api` y la aplicación de Flask global.
+
+## `create_app`<a name="create_app"></a>
+
+Para poder testear correctamente la API, necesitamos una forma sencilla de crearla. Un patron utilizado en Flask es crear un metodo llamado `create_app` que cree la API, consumiendo una lista de configuraciones.
+
+Dentro de `app/__init__.py` creamos el siguiente metodo:
+
+```python
+import os
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_restplus import Api
+
+db = SQLAlchemy()
 
 
+def create_app(env=None):
+    from app.config import config_by_name
+    from app.routes import register_routes
+    # Creamos la aplicación de Flask
+    app = Flask(__name__)
+    config = config_by_name[env or "test"]
+    app.config.from_object(config)
+    # Creacmos el objeto `api`
+    api_title = os.environ['APP_TITLE'] or config.TITLE
+    api_version = os.environ('APP_VERSION') or config.VERSION
+    api = Api(app, title=api_title, version=api_version)
+    # Registramos las rutas
+    register_routes(api, app)
+    # Inicializamos la base de datos
+    db.init_app(app)
+    # Creamos una ruta para chequear la salud del sistema
+    @app.route('/healthz')
+    def healthz():
+        """ Healthz endpoint """
+        return "ok"
+    # Retornamos la aplicación de Flask
+    return app
+```
+
+En `./app/config.py` creamos los archivos de configuración para cada uno de nuestros ambientes (por lo menos `test` y `prod`).
+
+```python
+import os
+
+basedir = os.path.abspath(path.dirname(__file__))
+
+class BaseConfig:
+    TITLE = 'Api'
+    VERSION = '0.0.1'
+    CONFIG_NAME = 'base'
+    DEBUG = False
+    TESTING = False
+   
+class DevelopmentConfig(BaseConfig):
+    CONFIG_NAME: 'dev'
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///{0}/app-dev.db'.format(basedir)
+    
+class TestingConfig(BaseConfig):
+    CONFIG_NAME = 'test'
+    DEBUG = True
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///{0}/app-tetst.db'.format(basedir)
+    
+class ProductionConfig(BaseConfig):
+    CONFIG_NAME = 'prod'
+    SQLALCHEMY_DATABASE_URI = "sqlite:///{0}/app-prod.db".format(basedir)
+    
+EXPORT_CONFIGS = [
+  DevelopmentConfig,
+  TestingConfig,
+  ProductionConfig,
+]
+
+config_by_name = { cfg.CONFIG_NAME: cfg for cfg in EXPORT_CONFIGS }
+```
+
+Lo único que queda definir es el metodo para importar las rutas `register_routes`, definido en el módulo `./app/routes.py`.
+
+```python
+def register_routes(api, app, root="api"):
+    # Importamos el metodo `register_routes` de cada `entity` y lo renombramos
+    from app.entity import register_routes as attach_entity
+    # Registramos las rutas
+    attach_entity(api, app)
+```
+
+Una de las ventajas del metodo `create_app` es que tambien podemos realizar pruebas sobre el.
+
+```python
+from app.test.fixtures import app, client # noqa
 
 
+def test_app_creates(app): # noqa
+    assert app
+    
+def test_app_healthy(app, client): # noqa
+    with client
+        resp = client.get('/healthz')
+        assert resp.status_code == 200
+        assert resp.text == 'ok'
+```
+
+## Fixtures<a name="fixtures"></a>
+
+Los `fixtures` existen para crear un ambiente base confiable y replicable por sobre el cual correr las pruebas. Los metodos de pruebas pueden recibir estos `fixtures` como argumentos al momento de ser llamados. Los mismos se registran utilizando el decorador `@pytset.fixture`. Por ejemplo, para nuestro caso conviene crear un `fixture` para la `app` y uno para la `db`:
+
+```python
+import pytest
+
+from app import create_app
 
 
+@pytest.fixture
+def app():
+    return create_app('test')
+    
+@pytest.fixture
+def db(app):
+    from app import db
+    
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        yield db
+        db.drop_all()
+        db.session.commit()
+```
 
+Si los definimos en un módulo llamado `test`, despues solo tenemos que importarlos a nuestro archivo de pruebas, y utilizar los mismos nombres de los argumentos, que los utilizados al momento de construir el `fixture`. Si vemos el ejemplo del archivo de pruebas de `create_app` podemos ver como utilizarlos.
 
+## Run `dev`<a name="run"></a>
 
+Para correr la aplicación en modo desarrollo utilizamos el siguiente comando:
 
-
+```bash
+FLASK_ENV=development flask run --port 8000
+```
 
 
 
