@@ -386,10 +386,9 @@ Para poder testear correctamente la API, necesitamos una forma sencilla de crear
 Dentro de `app/__init__.py` creamos el siguiente metodo:
 
 ```python
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_restplus import Api
+from flask_restplus import Api, Resource, fields
 
 db = SQLAlchemy()
 
@@ -526,10 +525,28 @@ Para correr las pruebas utilizaremos `pytest`. Desde la `cli` solo es necesario 
 pytes
 ```
 
+## Swagger<a name=swagger></a>
+
+Al utilizar `flask_restful` ya contamos con documentación en formato `swagger` que podemos visualizar desde la raiz de nuestra API. Osea, si servimos la `api` desde el puerto `8000`, podemos encontrar la documentación en `http://localhost:8000`.
+
+También podemos servir la el documento `swagger` en JSON agregando la siguiente ruta:
+
+```python
+from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_restplus import Api, Resource, fields
+
+db = SQLAlchemy()
 
 
-
-
+def create_app(env=None):
+    # Dentro de `create_app` despues de definir la `api`
+    @app.route('/swagger')
+    def swagger():
+        """ Swagger JSON docs """
+        return jsonify(api.__schema__)
+    # ...
+```
 
 
 
