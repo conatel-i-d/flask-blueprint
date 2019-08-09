@@ -33,7 +33,7 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
 
 - Utiliza la librería [`flask_accepts`](https://github.com/apryor6/flask_accepts) que tiene pocos usuarios. De todas maneras el codigo es simple, y no debería ser dificil de solucionar en caso de que ocurran bugs. 
 
-## Librerías<a name="library"></a>
+## Librerías<a name="libraries"></a>
 
 - [`flask`](https://palletsprojects.com/p/flask/)
 - [`pytest`](https://docs.pytest.org/en/latest/)
