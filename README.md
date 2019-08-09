@@ -41,7 +41,6 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
 - [`sqlalchemy`](https://www.sqlalchemy.org/)
 - [`flask-restplus`](https://flask-restplus.readthedocs.io/en/stable/)
 - [`flask_accepts`](https://github.com/apryor6/flask_accepts)
-- [`flask_scripts`](https://flask-script.readthedocs.io/en/latest/)
 
 ## Estructura<a name="structure"></a>
 
