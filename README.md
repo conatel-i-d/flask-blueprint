@@ -475,7 +475,7 @@ def test_app_creates(app): # noqa
     assert app
     
 def test_app_healthy(app, client): # noqa
-    with client
+    with client:
         resp = client.get('/healthz')
         assert resp.status_code == 200
         assert resp.text == 'ok'
@@ -494,7 +494,11 @@ from app import create_app
 @pytest.fixture
 def app():
     return create_app('test')
-    
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
 @pytest.fixture
 def db(app):
     from app import db
