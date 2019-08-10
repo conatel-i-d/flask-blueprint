@@ -11,6 +11,7 @@ db = SQLAlchemy()
 def create_app(env=None):
     from app.config import config_by_name
     from app.routes import register_routes
+    from app.errors import register_error_handlers
     # Creamos la aplicación de Flask
     app = ApiFlask(__name__)
     config = config_by_name[env or "test"]
@@ -21,6 +22,8 @@ def create_app(env=None):
     api = Api(app, title=api_title, version=api_version)
     # Registramos las rutas
     register_routes(api, app)
+    # Registramos loa error_handlers
+    register_error_handlers(app)
     # Inicializamos la base de datos
     db.init_app(app)
     # Creamos una ruta para chequear la salud del sistema
