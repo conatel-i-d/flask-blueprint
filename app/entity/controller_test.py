@@ -1,13 +1,19 @@
 from unittest.mock import patch
 from flask.testing import FlaskClient
+import pytest
 
 from app.test.fixtures import client, app  # noqa
+from app.api_response import ApiResponse
+from .controller import EntityResource
 from .service import EntityService
 from .schema import EntitySchema
 from .model import Entity
 from .interface import EntityInterface
 from . import BASE_ROUTE
 
+@pytest.fixture
+def resource():
+    return EntityResource()
 
 def make_entity(
     id: int = 123, name: str = "Test entity", purpose: str = "Test purpose"
@@ -24,21 +30,22 @@ class TestEntityResource:
             make_entity(456, name="Test Entity 2"),
         ],
     )
-    def test_get(self, client: FlaskClient):  # noqa
-        with client:
-            results = client.get(f"/api/{BASE_ROUTE}", follow_redirects=True).get_json()
-            expected = (
-                EntitySchema(many=True)
-                .dump(
-                    [
-                        make_entity(123, name="Test Entity 1"),
-                        make_entity(456, name="Test Entity 2"),
-                    ]
-                )
-                .data
+    def test_get(self, resource: EntityResource):  # noqa
+        response = resource.get()
+        expected = (
+            EntitySchema(many=True)
+            .dump(
+                [
+                    make_entity(123, name="Test Entity 1"),
+                    make_entity(456, name="Test Entity 2"),
+                ]
             )
-            for r in results:
-                assert r in expected
+            .data
+        )
+        assert isinstance(response, ApiResponse) == True
+        assert response.status == 200
+        for r in response.value:
+            assert r in expected
 
     @patch.object(
         EntityService, "create", lambda create_request: Entity(**create_request)

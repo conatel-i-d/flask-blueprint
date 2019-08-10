@@ -10,24 +10,29 @@ from .service import EntityService
 from .model import Entity
 from .interface import EntityInterface
 
-api = Namespace("Entity", description="Single namespace, single entity")  # noqa
+api = Namespace("Entity", description="Single entity")  # noqa
 
 
 @api.route("/")
 class EntityResource(Resource):
-    """Entitys"""
+    """
+    Entity Resource
+    """
 
-    @responds(schema=EntitySchema, many=True)
-    def get(self) -> List[Entity]:
-        """Get all Entitys"""
-        return EntityService.get_all()
-        #return ApiResponse(EntityService.get_all())
+    @responds(schema=EntitySchema, many=True, wrapper=ApiResponse)
+    def get(self) -> ApiResponse:
+        """
+        Returns the list of entities
+        """
+        return ApiResponse(EntityService.get_all())
 
     @accepts(schema=EntitySchema, api=api)
     @responds(schema=EntitySchema)
     def post(self) -> Entity:
-        """Create a Single Entity"""
-
+        """
+        Create a Single Entity
+        """
+        #return ApiResponse(EntityService.create(request.parsed_obj), 201)
         return EntityService.create(request.parsed_obj)
 
 
