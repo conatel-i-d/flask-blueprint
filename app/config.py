@@ -11,7 +11,7 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
    
 class DevelopmentConfig(BaseConfig):
-    CONFIG_NAME: 'dev'
+    CONFIG_NAME = 'dev'
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///{0}/db/app-dev.db'.format(basedir)
     
