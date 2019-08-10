@@ -4,6 +4,7 @@ from flask_restplus import Namespace, Resource
 from flask.wrappers import Response
 from typing import List
 
+from app.api_response import ApiResponse
 from .schema import EntitySchema
 from .service import EntityService
 from .model import Entity
@@ -19,8 +20,8 @@ class EntityResource(Resource):
     @responds(schema=EntitySchema, many=True)
     def get(self) -> List[Entity]:
         """Get all Entitys"""
-
         return EntityService.get_all()
+        #return ApiResponse(EntityService.get_all())
 
     @accepts(schema=EntitySchema, api=api)
     @responds(schema=EntitySchema)
@@ -48,7 +49,7 @@ class EntityIdResource(Resource):
 
     @accepts(schema=EntitySchema, api=api)
     @responds(schema=EntitySchema)
-    def put(self, id: int) -> Entity:
+    def put(self, id: int):
         """Update Single Entity"""
 
         changes: EntityInterface = request.parsed_obj

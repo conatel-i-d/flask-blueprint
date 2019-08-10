@@ -7,4 +7,12 @@ class ApiResponse(object):
         self.status = status
 
     def to_response(self):
-        return Response(json.dumps(self.value), status=self.status, mimetype='application/json')
+        if self.value == None:
+            return Response('', status=self.status)
+        data = {}
+        if isinstance(self.value, dict):
+            data['item'] = self.value
+        if isinstance(self.value, list):
+            data['items'] = self.value
+            data['count'] = len(self.value)
+        return Response(json.dumps(data), status=self.status, mimetype='application/json')

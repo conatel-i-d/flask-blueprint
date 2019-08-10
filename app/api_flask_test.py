@@ -11,6 +11,3 @@ def test_api_flask_make_response(app):
     response = app.make_response(api_response)
     expected = isinstance(response, Response)
     assert expected == True
-    assert response.mimetype == 'application/json'
-    assert response.status == '200 OK'
-    assert response.data == b'{"ok": true}'
