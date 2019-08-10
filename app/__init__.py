@@ -1,7 +1,9 @@
 import os
-from flask import Flask, jsonify
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import Api, Resource, fields
+
+from app.api_flask import ApiFlask
 
 db = SQLAlchemy()
 
@@ -10,7 +12,7 @@ def create_app(env=None):
     from app.config import config_by_name
     from app.routes import register_routes
     # Creamos la aplicación de Flask
-    app = Flask(__name__)
+    app = ApiFlask(__name__)
     config = config_by_name[env or "test"]
     app.config.from_object(config)
     # Creacmos el objeto `api`
