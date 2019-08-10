@@ -20,6 +20,8 @@ Blueprint para la creación de APIs con Flask
 - [Run `dev`](#run)
 - [Tests](#test)
 - [Swagger](#swagger)
+- [Migraciones](#migrations)
+  - [Uso de `alembic`](#alembic_use) 
 
 ## Inspiración<a name="inspiration"></a>
 
@@ -41,6 +43,7 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
 - [`sqlalchemy`](https://www.sqlalchemy.org/)
 - [`flask-restplus`](https://flask-restplus.readthedocs.io/en/stable/)
 - [`flask_accepts`](https://github.com/apryor6/flask_accepts)
+- [`alembic`](https://alembic.sqlalchemy.org)
 
 ## Estructura<a name="structure"></a>
 
@@ -552,6 +555,84 @@ def create_app(env=None):
     # ...
 ```
 
+## Migraciones <a name="migrations"></a>
+
+Las migraciones de la base de datos las haremos con [`alembic`](https://alembic.sqlalchemy.org)
+
+Es una herramienta para desarrollar migraciones de bases de datos desarrollado por el autor de SQLAlchemy. Con esta herramienta podremos:
+
+1. Emitir modificaciones en la base de datos.
+2. Construir `scripts` que indiquen una serie de `pasos` necesarios para actualizar o revertir el estado de una tabla.
+3. Permite la ejecución de `scripts` de forma secuencial.
+
+### Uso de `alembic`<a name="alembic_use"></a>
+
+Una vez instalado `alembic` debemos crear la carpeta donde se incluiran todas las migraciones. Esto lo hacemos con el comando:
+
+```
+alembic init migrations
+```
+
+Se creara:
+
+1. Un archivo en la raiz llamado `alembic.ini`
+2. Una carpeta llamada `migrations` donde incluiremos nuestros `scripts`.
+
+Dentro del archivo `alembic.ini` colocamos la ruta hacia la base de datos de `dev` modificando el valor de `sqlalchemy.url`.
+
+Las migraciones se crean dentro de revisiones. `Alembic` puede generar los archivos de revisiones por nosotros con el siguiente comando:
+
+```
+alembic revision -m "create entity table"
+```
+
+El resultado será un nuevo archivo de migración dentro de `./migrations/versions/`. Dentro de este documento tendremos que modificar las declaraciones de las funciones `upgrade()` y `downgrade()`. Las mismas son ejecutadas cuando nos movemos en un, u otro sentido de las migraciones.
+
+El siguiente es un ejemplo de como las podemos configurar para crear una nueva tabla:
+
+```python
+def upgrade():
+    op.create_table(
+        'entity',
+        sa.Column('id', sa.Integer, primary_key=True),
+        sa.Column('name', sa.String(255), nullable=False),
+        sa.Column('purpose', sa.String(255), nullable=False),
+    )
+
+def downgrade():
+    op.drop_table('entity')
+```
+
+Al finalizar, podemos aplicar nuestra nueva revisión con el comando:
+
+```
+alembic upgrade head
+```
+
+Esto aplicara todos los cambios definidos en la migración.
+
+Existen otros comandos útiles que `alembic` nos provee:
+
+- Para ver la migración actual
+    ```
+    alembic current --verbose
+    ```
+- Para ver la historia de las migraciones
+    ```
+    alembic history --verbose
+    ```
+- Para bajar a la versión anterior de la base
+    ```
+    alembic downgrade -1
+    ```
+- Para subir a la versión siguiente
+    ```
+    alembic upgrade +1
+    ```
+- Para hacer un roll-back de todas las migraciones
+    ```
+    alembic downgrade base
+    ```
 
 
 
