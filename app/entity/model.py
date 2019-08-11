@@ -4,7 +4,7 @@ from .interface import EntityInterface
 
 
 class Entity(db.Model):  # type: ignore
-    """A snazzy Entity"""
+    """Entity Model"""
 
     __tablename__ = "entity"
 

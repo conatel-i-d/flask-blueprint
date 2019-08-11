@@ -1,9 +1,8 @@
 from marshmallow import fields, Schema
 
-
 class EntitySchema(Schema):
-    """Entity schema"""
+    """ Entity marshmallow schema """
 
-    id = fields.Number(attribute="id")
-    name = fields.String(attribute="name")
-    purpose = fields.String(attribute="purpose")
+    id = fields.Int(attribute='id', dump_only=True)
+    name = fields.String(attribute='name')
+    purpose = fields.String(attribute='purpose')

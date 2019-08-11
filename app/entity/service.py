@@ -14,8 +14,11 @@ class EntityService:
         return Entity.query.get(id)
 
     @staticmethod
-    def update(entity: Entity, Entity_change_updates: EntityInterface) -> Entity:
-        entity.update(Entity_change_updates)
+    def update(id: int, body: EntityInterface) -> Entity:
+        entity = EntityService.get_by_id(id)
+        if entity is None:
+            return None
+        entity.update(body)
         db.session.commit()
         return entity
 

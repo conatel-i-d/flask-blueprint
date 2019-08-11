@@ -1,6 +1,6 @@
 from flask import request
 from flask_accepts import accepts, responds
-from flask_restplus import Namespace, Resource
+from flask_restplus import Namespace, Resource, fields
 from flask.wrappers import Response
 from typing import List
 
@@ -10,8 +10,25 @@ from .service import EntityService
 from .model import Entity
 from .interface import EntityInterface
 
-api = Namespace("Entity", description="Single entity")  # noqa
+api = Namespace('Entity', description="Entity resources")
 
+model_schema = EntitySchema()
+collection_schema = EntitySchema(many=True)
+
+base = api.model('EntityBase', {
+    'name': fields.String(description='Name of the entity', required=False, example='My entity'),
+    'purpose': fields.String(description='Purpose of the entity', required=False, example='The purpose of life is 42'),
+})
+model = api.inherit('Entity', base, {
+    'id': fields.Integer(description='Unique identifier', required=True, example=123),
+})
+model_response = api.model('EntityResponse', {
+    'item': fields.Nested(model)
+})
+collection = api.model('EntityCollection', {
+    'items': api.as_list(fields.Nested(model)),
+    'count': fields.Integer
+})
 
 @api.route("/")
 class EntityResource(Resource):
@@ -19,44 +36,50 @@ class EntityResource(Resource):
     Entity Resource
     """
 
-    @responds(schema=EntitySchema, many=True, wrapper=ApiResponse)
+    @api.response(200, 'Entity List', collection)
     def get(self) -> ApiResponse:
         """
         Returns the list of entities
         """
-        return ApiResponse(EntityService.get_all())
+        entities = EntityService.get_all()
+        return ApiResponse(collection_schema.dump(entities).data)
 
-    @accepts(schema=EntitySchema, api=api)
-    @responds(schema=EntitySchema)
+    @api.expect(base)
+    @api.response(200, 'New Entity', model)
     def post(self) -> Entity:
         """
-        Create a Single Entity
+        Create a single Entity
         """
-        #return ApiResponse(EntityService.create(request.parsed_obj), 201)
-        return EntityService.create(request.parsed_obj)
+        body = model_schema.load(request.json).data
+        entity = EntityService.create(body)
+        return ApiResponse(model_schema.dump(entity).data)
 
 
 @api.route("/<int:id>")
 @api.param("id", "Entity database ID")
 class EntityIdResource(Resource):
-    @responds(schema=EntitySchema)
+    @api.response(200, 'Wanted entity', model)
     def get(self, id: int) -> Entity:
-        """Get Single Entity"""
+        """
+        Get a single Entity
+        """
+        entity = EntityService.get_by_id(id)
+        return ApiResponse(model_schema.dump(entity).data)
 
-        return EntityService.get_by_id(id)
-
+    @api.response(204, 'No Content', model)
     def delete(self, id: int) -> Response:
-        """Delete Single Entity"""
+        """
+        Delete a single Entity
+        """
         from flask import jsonify
 
         id = EntityService.delete_by_id(id)
-        return jsonify(dict(status="Success", id=id))
+        return ApiResponse(None, 204)
 
-    @accepts(schema=EntitySchema, api=api)
-    @responds(schema=EntitySchema)
+    @api.expect(base)
+    @api.response(200, 'Updated Entity', model)
     def put(self, id: int):
-        """Update Single Entity"""
-
-        changes: EntityInterface = request.parsed_obj
-        Entity = EntityService.get_by_id(id)
-        return EntityService.update(Entity, changes)
+        """Update a single Entity"""
+        body = model_schema.load(request.json).data
+        entity = EntityService.update(id, body)
+        return ApiResponse(model_schema.dump(entity).data)

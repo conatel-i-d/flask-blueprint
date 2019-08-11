@@ -1,11 +1,15 @@
 import pytest
 
 from app import create_app
-
+from app.api_flask import ApiFlask
 
 @pytest.fixture
 def app():
-    return create_app('test')
+    return create_app('test')[0]
+
+@pytest.fixture
+def api():
+    return create_app('test')[1]
     
 @pytest.fixture
 def client(app):
@@ -21,3 +25,4 @@ def db(app):
         yield db
         db.drop_all()
         db.session.commit()
+

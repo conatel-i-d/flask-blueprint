@@ -1,7 +1,7 @@
 import os
-from flask import jsonify
+from flask import jsonify, Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_restplus import Api, Resource, fields
+from flask_restplus import Resource, fields
 
 from app.api_flask import ApiFlask
 
@@ -13,13 +13,13 @@ def create_app(env=None):
     from app.routes import register_routes
     from app.errors import register_error_handlers
     # Creamos la aplicación de Flask
-    app = ApiFlask(__name__)
+    app = Flask(__name__)
     config = config_by_name[env or "test"]
     app.config.from_object(config)
     # Creacmos el objeto `api`
     api_title = os.environ.get('APP_TITLE', config.TITLE)
     api_version = os.environ.get('APP_VERSION', config.VERSION)
-    api = Api(app, title=api_title, version=api_version)
+    api = ApiFlask(app, title=api_title, version=api_version)
     # Registramos las rutas
     register_routes(api, app)
     # Registramos loa error_handlers
@@ -33,4 +33,4 @@ def create_app(env=None):
         """ Healthz endpoint """
         return jsonify({"ok": True})
     # Retornamos la aplicación de Flask
-    return app
+    return app, api
