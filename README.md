@@ -52,7 +52,6 @@ Todos los archivos que estén relacionados por un mismo topico, deben pertenecer
 La unidad básica de una API es un `entity`, que corresponde a "aquello sobre lo que queremos operar". Cada `entity` debe contar con al menos las siguientes piezas:
 
 - `Model`: Representación de Python de la `entity`.
-- `Interface`: Define los tipos que conforman la `entity`.
 - `Controller`: Orquesta las rutas, servicios y esquemas de la `entity`.
 - `Schema`: Serializa y deserializa `entities`.
 - `Service`: Manipula `entities`. Por ejemplo, operaciones CRUD.
@@ -66,8 +65,6 @@ La estructura final será similar a la siguiente:
   __init__.py
   controller.py
   controller_test.py
-  interface.py
-  interface_test.py
   model.py
   model_test.py
   schema.py
@@ -117,34 +114,6 @@ def test_Entity_create(entity: Entity):
     assert entity
 ```
 
-### `Interface`<a name="interface"></a>
-
-_Define los tipos que conforman la `entity`._
-
-La razón de contar con un archivo adicional para definir la `entity` es para separar: _que es_ (`Model`), de _que lo hace_ (`Interface`). La `Interface` permite ser específico en los parámetros que necesito para interactuar (crear, modificar, buscar, elminar, etc.) con una `entity`.
-
-Además, ayudan a escribir la documentación de la `entity`.
-
-Para su definición usaremos un `TypeDict`, que funciona de forma similar que un diccionario convencional de `python` pero que permite definir que variables son aceptadas bajo cada llave. Es por esto que los hace utiles para definir `Interfaces`.
-
-Por ahora no son parte de `python` directamente, debemos obtenerlo de la librería [`mypy_extensions`](https://pypi.org/project/mypy_extensions/). Esta líbrería se define de la siguiente manera:
-
-> The `mypy_extensions` module defines experimental extensions to the standard “typing” module that are supported by the `mypy` typechecker.
-
-Y `mypy` es un motor de tipos opcionales para `python`. Los tipos ayudan a auto-documentar el código y evitan una serie de errores en `runtime`. Su uso no impacta con el funcionamiento del programa.
-
-Los `TypeDict` van a ser agregados formalmente a `python` en la versión `3.8`.
-
-```python
-from mypy_extensions import TypedDict
-
-class EntityInterface(TypeDict, total=False):
-    id: int
-    name: str
-```
-
-_Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
-
 ### `Schemas`<a name="schemas"></a>
 
 _Serializa y deserializa `entities`._
@@ -161,7 +130,7 @@ class EntitySchema(Schema):
     camelCase = fields.string(attribute='snake_case')
 ```
 
-_Las `Interfaces` y los `Schemas` no tienen por que contar con una suite de pruebas._
+_Los `Schemas` no tienen por que contar con una suite de pruebas._
 
 ### Services<a name="services"></a>
 
@@ -529,7 +498,59 @@ FLASK_ENV=development flask run --port 8000
 Para correr las pruebas utilizaremos `pytest`. Desde la `cli` solo es necesario utilizar este comando:
 
 ```
-pytes
+pytest
+```
+
+Flask provee una forma de testear la aplicación, al exponer la clase `Client` de `Werkzeug`, y manejando el contexto local por nosotros.
+
+Lo más importante es contar con un `fixture` que represente al cliente.
+
+En nuestro caso lo definimos de la siguiente manera.
+
+```python
+import pytest
+
+from app import create_app
+from app.api_flask import ApiFlask
+
+@pytest.fixture
+def app():
+    return create_app('test')[0]
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+```
+
+Ahora que contamos con el fixture, lo podemos utilizar dentro de nuestras pruebas.
+
+```python
+def test_empty_db(client):
+    """Start with a blank database."""
+    
+    rv = client.get('/')
+    assert b'No enties here so far' in rv.data
+```
+
+Para probar `POST` requests, podemos pasarle el cuerpo en el argumento `json` del metodo `client.post()`.
+
+```python
+def test_messages(client):
+    """Tests that messages work."""
+
+    rv = client.post('/add', json=dict(name='Something', purpose='awesome'))
+    assert b'{"name": "something", "purpose": "awesome", "id": 1}' in rv
+```
+
+Si necesitamos realizar pruebas en base a información recibida en el contexto `request`, `g`, y `session`, podemos utilizar el metodo `test_request_context`, que se encuentra dentro del objeto `app`. El objeto `app` también lo definimos como un `fixture`.
+
+```python
+def test_query_parameters(app, client):
+    """Test the name in the query parameters."""
+
+    with app.test_request_context('?name=John'):
+        assert flask.request.path == '/'
+        assert flask.request.args['name'] == 'John'
 ```
 
 ## Swagger<a name=swagger></a>

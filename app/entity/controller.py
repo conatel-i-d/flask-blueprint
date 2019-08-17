@@ -49,13 +49,16 @@ class EntityResource(Resource):
         """
         Create a single Entity
         """
-        body = model_schema.load(request.get_json()).data
+        json_data = request.get_json()
+        if json_data is None:
+            raise Exception('JSON body is undefined')
+        body = model_schema.load(json_data).data
         entity = EntityService.create(body)
         return ApiResponse(model_schema.dump(entity).data)
 
 
 @api.route("/<int:id>")
-@api.param("id", "Entity database ID")
+@api.param("id", "Entity unique identifier")
 class EntityIdResource(Resource):
     @api.response(200, 'Wanted entity', model)
     def get(self, id: int) -> Entity:

@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from flask.testing import FlaskClient
-from flask import request
+from flask import json, request
 import pytest
 
 from app.test.fixtures import client, app  # noqa
@@ -30,39 +30,39 @@ class TestEntityResource:
             make_entity(456, name="Test Entity 2"),
         ],
     )
-    def test_get(self, resource: EntityResource):  # noqa
-        response = resource.get()
-        expected = (
-            EntitySchema(many=True)
-            .dump(
-                [
-                    make_entity(123, name="Test Entity 1"),
-                    make_entity(456, name="Test Entity 2"),
-                ]
+
+    def test_get(self, client):
+        """Should get the list of entities."""
+        with client:
+            result = client.get(f"/api/{BASE_ROUTE}/").get_json()
+            expected = dict(
+                items=[
+                    {'id': 123, 'name': 'Test Entity 1', 'purpose': 'Test purpose'},
+                    {'id': 456, 'name': 'Test Entity 2', 'purpose': 'Test purpose'}
+                ],
+                count=2
             )
-            .data
-        )
-        assert isinstance(response, ApiResponse) == True
-        assert response.status == 200
-        for r in response.value:
-            assert r in expected
-
+            print(f"result = ", result)
+            print(f"expected = ", expected)
+            assert result == expected
+    
     @patch.object(
-        EntityService, "create", lambda create_request: Entity(**create_request)
+        EntityService, "create", lambda create_request: make_entity(**{**{'id': 1}, **create_request})
     )
-    def test_post(self, resource: EntityResource):  # noqa
-        payload = dict(name="Test entity", purpose="Test purpose")
-        response = resource.post()
-        expected = EntitySchema().dump(Entity(name=payload["name"], purpose=payload["purpose"])).data
-        assert isinstance(response, ApiResponse) == True
-        assert response.value == expected
-            
+    def test_post(self, client):  # noqa
+        with client:
+            data = dict(name='Test Entity 1', purpose='Test purpose')
+            result = client.post(f"/api/{BASE_ROUTE}/", json=data).get_json()
+            expected = dict(item=dict(id=1, name='Test Entity 1', purpose='Test purpose'))
+            print(f"result = ", result)
+            print(f"expected = ", expected)
+            assert result == expected
 
 
-def fake_update(entity: Entity, changes) -> Entity:
+def fake_update(id: int, changes) -> Entity:
     # To fake an update, just return a new object
     updated_Entity = Entity(
-        id=entity.id, name=changes["name"], purpose=changes["purpose"]
+        id=id, name=changes["name"], purpose=changes["purpose"]
     )
     return updated_Entity
 
@@ -72,28 +72,22 @@ class TestEntityIdResource:
     def test_get(self, client: FlaskClient):  # noqa
         with client:
             result = client.get(f"/api/{BASE_ROUTE}/123").get_json()
-            expected = make_entity(id=123)
+            expected = dict(item=dict(id=123, name='Test entity', purpose='Test purpose'))
             print(f"result = ", result)
-            assert result["id"] == expected.id
+            print(f"expected = ", expected)
+            assert result == expected
 
     @patch.object(EntityService, "delete_by_id", lambda id: id)
     def test_delete(self, client: FlaskClient):  # noqa
         with client:
-            result = client.delete(f"/api/{BASE_ROUTE}/123").get_json()
-            expected = dict(status="Success", id=123)
-            assert result == expected
+            result = client.delete(f"/api/{BASE_ROUTE}/123")
+            assert result.status_code == 204
+            assert result.data == b''
 
-    @patch.object(EntityService, "get_by_id", lambda id: make_entity(id=id))
-    @patch.object(EntityService, "update", fake_update)
+    @patch.object(EntityService, 'update', lambda id, update: dict(**{**update, **dict(id=123)}))
     def test_put(self, client: FlaskClient):  # noqa
         with client:
-            result = client.put(
-                f"/api/{BASE_ROUTE}/123",
-                json={"name": "New Entity", "purpose": "New purpose"},
-            ).get_json()
-            expected = (
-                EntitySchema()
-                .dump(Entity(id=123, name="New Entity", purpose="New purpose"))
-                .data
-            )
+            updates = dict(name='New Entity', purpose='New purpose')
+            result = client.put(f"/api/{BASE_ROUTE}/123", json=updates).get_json()
+            expected = dict(item=dict(**{**updates, **dict(id=123)}))
             assert result == expected
