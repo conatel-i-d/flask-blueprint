@@ -1,5 +1,6 @@
 from unittest.mock import patch
 from flask.testing import FlaskClient
+from flask import request
 import pytest
 
 from app.test.fixtures import client, app  # noqa
@@ -8,7 +9,6 @@ from .controller import EntityResource
 from .service import EntityService
 from .schema import EntitySchema
 from .model import Entity
-from .interface import EntityInterface
 from . import BASE_ROUTE
 
 @pytest.fixture
@@ -50,20 +50,16 @@ class TestEntityResource:
     @patch.object(
         EntityService, "create", lambda create_request: Entity(**create_request)
     )
-    def test_post(self, client: FlaskClient):  # noqa
-        with client:
-
-            payload = dict(name="Test entity", purpose="Test purpose")
-            result = client.post(f"/api/{BASE_ROUTE}/", json=payload).get_json()
-            expected = (
-                EntitySchema()
-                .dump(Entity(name=payload["name"], purpose=payload["purpose"]))
-                .data
-            )
-            assert result == expected
+    def test_post(self, resource: EntityResource):  # noqa
+        payload = dict(name="Test entity", purpose="Test purpose")
+        response = resource.post()
+        expected = EntitySchema().dump(Entity(name=payload["name"], purpose=payload["purpose"])).data
+        assert isinstance(response, ApiResponse) == True
+        assert response.value == expected
+            
 
 
-def fake_update(entity: Entity, changes: EntityInterface) -> Entity:
+def fake_update(entity: Entity, changes) -> Entity:
     # To fake an update, just return a new object
     updated_Entity = Entity(
         id=entity.id, name=changes["name"], purpose=changes["purpose"]

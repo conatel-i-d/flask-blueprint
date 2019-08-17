@@ -1,6 +1,5 @@
 from sqlalchemy import Integer, Column, String
 from app import db  # noqa
-from .interface import EntityInterface
 
 
 class Entity(db.Model):  # type: ignore
@@ -12,7 +11,7 @@ class Entity(db.Model):  # type: ignore
     name = Column(String(255))
     purpose = Column(String(255))
 
-    def update(self, changes: EntityInterface):
+    def update(self, changes):
         for key, val in changes.items():
             setattr(self, key, val)
         return self

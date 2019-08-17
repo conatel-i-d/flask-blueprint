@@ -8,7 +8,6 @@ from app.api_response import ApiResponse
 from .schema import EntitySchema
 from .service import EntityService
 from .model import Entity
-from .interface import EntityInterface
 
 api = Namespace('Entity', description="Entity resources")
 
@@ -50,7 +49,7 @@ class EntityResource(Resource):
         """
         Create a single Entity
         """
-        body = model_schema.load(request.json).data
+        body = model_schema.load(request.get_json()).data
         entity = EntityService.create(body)
         return ApiResponse(model_schema.dump(entity).data)
 

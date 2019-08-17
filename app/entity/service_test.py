@@ -3,7 +3,6 @@ from typing import List
 from app.test.fixtures import app, db  # noqa
 from .model import Entity
 from .service import EntityService  # noqa
-from .interface import EntityInterface
 
 
 def test_get_all(db: SQLAlchemy):  # noqa

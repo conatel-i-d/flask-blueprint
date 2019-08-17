@@ -1,7 +1,6 @@
 from app import db
 from typing import List
 from .model import Entity
-from .interface import EntityInterface
 
 
 class EntityService:
@@ -14,7 +13,7 @@ class EntityService:
         return Entity.query.get(id)
 
     @staticmethod
-    def update(id: int, body: EntityInterface) -> Entity:
+    def update(id: int, body) -> Entity:
         entity = EntityService.get_by_id(id)
         if entity is None:
             return None
@@ -32,7 +31,7 @@ class EntityService:
         return [id]
 
     @staticmethod
-    def create(new_attrs: EntityInterface) -> Entity:
+    def create(new_attrs) -> Entity:
         new_entity = Entity(name=new_attrs["name"], purpose=new_attrs["purpose"])
 
         db.session.add(new_entity)
