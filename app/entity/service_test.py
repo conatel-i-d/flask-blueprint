@@ -20,13 +20,10 @@ def test_get_all(db: SQLAlchemy):  # noqa
 
 def test_update(db: SQLAlchemy):  # noqa
     yin: Entity = Entity(id=1, name="Yin", purpose="thing 1")
-
     db.session.add(yin)
     db.session.commit()
-    updates: EntityInterface = dict(name="New Entity name")
-
-    EntityService.update(yin, updates)
-
+    updates = dict(name="New Entity name")
+    EntityService.update(yin.id, updates)
     result: Entity = Entity.query.get(yin.id)
     assert result.name == "New Entity name"
 
