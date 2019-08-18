@@ -10,6 +10,7 @@ class Entity(db.Model):  # type: ignore
     id = Column(Integer(), primary_key=True)
     name = Column(String(255))
     purpose = Column(String(255))
+    snake_case = Column(String(255))
 
     def update(self, changes):
         for key, val in changes.items():
