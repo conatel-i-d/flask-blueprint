@@ -8,26 +8,12 @@ from app.api_response import ApiResponse
 from .schema import EntitySchema
 from .service import EntityService
 from .model import Entity
+from .interfaces import EntityInterfaces
 
 api = Namespace('Entity', description="Entity resources")
-
+interfaces = EntityInterfaces(api)
 model_schema = EntitySchema()
 collection_schema = EntitySchema(many=True)
-
-base = api.model('EntityBase', {
-    'name': fields.String(description='Name of the entity', required=False, example='My entity'),
-    'purpose': fields.String(description='Purpose of the entity', required=False, example='The purpose of life is 42'),
-})
-model = api.inherit('Entity', base, {
-    'id': fields.Integer(description='Unique identifier', required=True, example=123),
-})
-model_response = api.model('EntityResponse', {
-    'item': fields.Nested(model)
-})
-collection = api.model('EntityCollection', {
-    'items': api.as_list(fields.Nested(model)),
-    'count': fields.Integer
-})
 
 @api.route("/")
 class EntityResource(Resource):
@@ -35,7 +21,7 @@ class EntityResource(Resource):
     Entity Resource
     """
 
-    @api.response(200, 'Entity List', collection)
+    @api.response(200, 'Entity List', interfaces.many)
     def get(self) -> ApiResponse:
         """
         Returns the list of entities
@@ -43,8 +29,8 @@ class EntityResource(Resource):
         entities = EntityService.get_all()
         return ApiResponse(collection_schema.dump(entities).data)
 
-    @api.expect(base)
-    @api.response(200, 'New Entity', model)
+    @api.expect(interfaces.create)
+    @api.response(200, 'New Entity', interfaces.single)
     def post(self) -> Entity:
         """
         Create a single Entity
@@ -60,7 +46,7 @@ class EntityResource(Resource):
 @api.route("/<int:id>")
 @api.param("id", "Entity unique identifier")
 class EntityIdResource(Resource):
-    @api.response(200, 'Wanted entity', model)
+    @api.response(200, 'Wanted entity', interfaces.single)
     def get(self, id: int) -> Entity:
         """
         Get a single Entity
@@ -68,7 +54,7 @@ class EntityIdResource(Resource):
         entity = EntityService.get_by_id(id)
         return ApiResponse(model_schema.dump(entity).data)
 
-    @api.response(204, 'No Content', model)
+    @api.response(204, 'No Content')
     def delete(self, id: int) -> Response:
         """
         Delete a single Entity
@@ -78,8 +64,8 @@ class EntityIdResource(Resource):
         id = EntityService.delete_by_id(id)
         return ApiResponse(None, 204)
 
-    @api.expect(base)
-    @api.response(200, 'Updated Entity', model)
+    @api.expect(interfaces.update)
+    @api.response(200, 'Updated Entity', interfaces.single)
     def put(self, id: int):
         """Update a single Entity"""
         body = model_schema.load(request.json).data
