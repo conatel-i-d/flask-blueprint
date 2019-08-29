@@ -5,7 +5,9 @@ class BaseInterfaces(object):
     """ Base interfaces class """
 
     def __init__(self):
-        self.schema = self.create_marshmallow_schema()
+        self._schema = self.create_marshmallow_schema()
+        self.single_schema = self._schema()
+        self.many_schema = self._schema(many=True)
 
     def get_marshmallow_fields_keys(self):
         return [field for field in self.attributes() if
@@ -26,12 +28,4 @@ class BaseInterfaces(object):
     
     def create_marshmallow_schema(self):
         fields_keys = self.get_marshmallow_fields_keys()
-        fields = dict()
-        for key in fields_keys:
-            attributes = getattr(self, key).get('m')
-            print(attributes)
-            field = getattr(marshmallow_fields, attributes['field'])
-            if field is None:
-                continue
-            fields[key] = field(**attributes)
-        return type('MarshmallowSchema', (Schema,), fields)
+        return type('MarshmallowSchema', (Schema,), {field_key: getattr(self, field_key).get('m') for field_key in fields_keys})
