@@ -11,9 +11,9 @@ FIELDS = [
 ]
 
 class ChildInterfaces(BaseInterfaces):
-    id = FIELDS[0]
-    first_name = FIELDS[1]
-    admin = FIELDS[2]
+    id = dict(m=marshmallow_fields.Int(attribute='id'))
+    first_name = dict(m=marshmallow_fields.String(attribute='firstName'))
+    admin = dict(m=marshmallow_fields.Bool(attribute='admin'))
 
 @pytest.fixture
 def base():
