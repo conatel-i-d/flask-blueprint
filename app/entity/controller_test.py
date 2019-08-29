@@ -16,9 +16,9 @@ def resource():
     return EntityResource()
 
 def make_entity(
-    id: int = 123, name: str = "Test entity", purpose: str = "Test purpose"
+    id: int = 123, name: str = "Test entity", purpose: str = "Test purpose", snake_case="Something"
 ) -> Entity:
-    return Entity(id=id, name=name, purpose=purpose)
+    return Entity(id=id, name=name, purpose=purpose, snake_case=snake_case)
 
 
 class TestEntityResource:
@@ -51,9 +51,13 @@ class TestEntityResource:
     )
     def test_post(self, client):  # noqa
         with client:
-            data = dict(name='Test Entity 1', purpose='Test purpose')
+            data = dict(name='Test Entity 1', purpose='Test purpose', camelCase='Something')
             result = client.post(f"/api/{BASE_ROUTE}/", json=data).get_json()
-            expected = dict(item=dict(id=1, name='Test Entity 1', purpose='Test purpose'))
+            expected = dict(item=dict(
+                id=1,
+                name='Test Entity 1',
+                snake_case='Something',
+                purpose='Test purpose'))
             print(f"result = ", result)
             print(f"expected = ", expected)
             assert result == expected

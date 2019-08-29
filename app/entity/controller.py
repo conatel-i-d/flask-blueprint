@@ -39,6 +39,7 @@ class EntityResource(Resource):
         if json_data is None:
             raise Exception('JSON body is undefined')
         body = model_schema.load(json_data).data
+        print(json_data)
         entity = EntityService.create(body)
         return ApiResponse(model_schema.dump(entity).data)
 

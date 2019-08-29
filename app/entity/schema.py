@@ -6,4 +6,4 @@ class EntitySchema(Schema):
     id = fields.Int(attribute='id', dump_only=True)
     name = fields.String(attribute='name')
     purpose = fields.String(attribute='purpose')
-    snake_case = fields.String(attribute='camelCase')
+    camelCase = fields.String(attribute='snake_case')

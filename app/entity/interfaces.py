@@ -1,15 +1,25 @@
+from marshmallow import fields as mfields, Schema
 from flask_restplus import fields
 
-from .schema import EntitySchema
+class EntitySchema(Schema):
+    """ Entity marshmallow schema """
+
+    id = mfields.Int(attribute='id', dump_only=True)
+    name = mfields.String(attribute='name')
+    purpose = mfields.String(attribute='purpose')
+    camelCase = mfields.String(attribute='snake_case')
 
 class EntityInterfaces(object):
-    """Entity REST+ interfaces"""
-    
     """Flask REST+ fields definitions"""
     fields = dict(
         id=fields.Integer(description='Unique identifier', required=True, example=123),
         name=fields.String(description='Name of the entity', required=False, example='My entity'),
         purpose=fields.String(description='Purpose of the entity', required=False, example='The purpose of life is 42'),
+        camelCase=fields.String(
+            description='Example of how to convert from camelCase to snake_case',
+            required=False,
+            example='Something'    
+        )
     )
 
     def __init__(self, api):
@@ -21,7 +31,7 @@ class EntityInterfaces(object):
         self.many = self.create_many_response()
 
     def pick_fields(self, keys):
-        return {key: self.fields[key] for key in keys}
+        return {key: self.fields[key] for key in self.fields}
 
     def create_single_response(self):
         return self.api.model('EntitySingleResponse', dict(
