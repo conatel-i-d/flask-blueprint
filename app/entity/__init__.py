@@ -1,6 +1,5 @@
   
 from .model import Entity  # noqa
-from .schema import EntitySchema  # noqa
 
 BASE_ROUTE = "entity"
 

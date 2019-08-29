@@ -5,7 +5,6 @@ from flask.wrappers import Response
 from typing import List
 
 from app.api_response import ApiResponse
-from .schema import EntitySchema
 from .service import EntityService
 from .model import Entity
 from .interfaces import EntityInterfaces

@@ -7,7 +7,6 @@ from app.test.fixtures import client, app  # noqa
 from app.api_response import ApiResponse
 from .controller import EntityResource
 from .service import EntityService
-from .schema import EntitySchema
 from .model import Entity
 from . import BASE_ROUTE
 
