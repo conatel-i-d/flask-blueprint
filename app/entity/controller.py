@@ -12,8 +12,6 @@ from .interfaces import EntityInterfaces
 
 api = Namespace('Entity', description="Entity resources")
 interfaces = EntityInterfaces(api)
-model_schema = EntitySchema()
-collection_schema = EntitySchema(many=True)
 
 @api.route("/")
 class EntityResource(Resource):
@@ -21,16 +19,18 @@ class EntityResource(Resource):
     Entity Resource
     """
 
-    @api.response(200, 'Entity List', interfaces.many)
+    @api.response(200, 'Entity List', interfaces.many_response_model)
     def get(self) -> ApiResponse:
         """
         Returns the list of entities
         """
         entities = EntityService.get_all()
-        return ApiResponse(collection_schema.dump(entities).data)
+        print('entities[0]["snake_case"] =' , getattr(entities[0], 'snake_case'))
+        print(interfaces.many_schema)
+        return ApiResponse(interfaces.many_schema.dump(entities).data)
 
-    @api.expect(interfaces.create)
-    @api.response(200, 'New Entity', interfaces.single)
+    @api.expect(interfaces.create_model)
+    @api.response(200, 'New Entity', interfaces.single_response_model)
     def post(self) -> Entity:
         """
         Create a single Entity
@@ -38,22 +38,22 @@ class EntityResource(Resource):
         json_data = request.get_json()
         if json_data is None:
             raise Exception('JSON body is undefined')
-        body = model_schema.load(json_data).data
+        body = interfaces.single_schema.load(json_data).data
         print(json_data)
         entity = EntityService.create(body)
-        return ApiResponse(model_schema.dump(entity).data)
+        return ApiResponse(interfaces.single_schema.dump(entity).data)
 
 
 @api.route("/<int:id>")
 @api.param("id", "Entity unique identifier")
 class EntityIdResource(Resource):
-    @api.response(200, 'Wanted entity', interfaces.single)
+    @api.response(200, 'Wanted entity', interfaces.single_response_model)
     def get(self, id: int) -> Entity:
         """
         Get a single Entity
         """
         entity = EntityService.get_by_id(id)
-        return ApiResponse(model_schema.dump(entity).data)
+        return ApiResponse(interfaces.single_schema.dump(entity).data)
 
     @api.response(204, 'No Content')
     def delete(self, id: int) -> Response:
@@ -65,10 +65,10 @@ class EntityIdResource(Resource):
         id = EntityService.delete_by_id(id)
         return ApiResponse(None, 204)
 
-    @api.expect(interfaces.update)
-    @api.response(200, 'Updated Entity', interfaces.single)
+    @api.expect(interfaces.update_model)
+    @api.response(200, 'Updated Entity', interfaces.single_response_model)
     def put(self, id: int):
         """Update a single Entity"""
-        body = model_schema.load(request.json).data
+        body = interfaces.single_schema.load(request.json).data
         entity = EntityService.update(id, body)
-        return ApiResponse(model_schema.dump(entity).data)
+        return ApiResponse(interfaces.single_schema.dump(entity).data)

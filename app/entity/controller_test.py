@@ -37,8 +37,8 @@ class TestEntityResource:
             result = client.get(f"/api/{BASE_ROUTE}/").get_json()
             expected = dict(
                 items=[
-                    {'id': 123, 'name': 'Test Entity 1', 'purpose': 'Test purpose'},
-                    {'id': 456, 'name': 'Test Entity 2', 'purpose': 'Test purpose'}
+                    {'id': 123, 'name': 'Test Entity 1', 'purpose': 'Test purpose', 'camelCase': 'Something'},
+                    {'id': 456, 'name': 'Test Entity 2', 'purpose': 'Test purpose', 'camelCase': 'Something'}
                 ],
                 count=2
             )
@@ -56,7 +56,7 @@ class TestEntityResource:
             expected = dict(item=dict(
                 id=1,
                 name='Test Entity 1',
-                snake_case='Something',
+                camelCase='Something',
                 purpose='Test purpose'))
             print(f"result = ", result)
             print(f"expected = ", expected)
@@ -76,7 +76,7 @@ class TestEntityIdResource:
     def test_get(self, client: FlaskClient):  # noqa
         with client:
             result = client.get(f"/api/{BASE_ROUTE}/123").get_json()
-            expected = dict(item=dict(id=123, name='Test entity', purpose='Test purpose'))
+            expected = dict(item=dict(id=123, name='Test entity', purpose='Test purpose', camelCase='Something'))
             print(f"result = ", result)
             print(f"expected = ", expected)
             assert result == expected
