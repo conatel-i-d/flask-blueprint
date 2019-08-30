@@ -10,11 +10,11 @@ Blueprint para la creación de APIs con Flask
 - [Estructura](#structure)
   - [Convención de nombres](#naming_convention)
   - [`Model`](#model)
-  - [`Interface`](#interface)
-  - [`Schema`](#schema)
+  - [`Interfaces`](#interfaces)
   - [`Service`](#service)
   - [`Controller`](#controller)
   - [Declaración de rutas](#route_declaration)
+- [API Response](#api_response)
 - [`create_app`](#create_app)
 - [Fixtures](#fixtures)
 - [Run `dev`](#run)
@@ -389,6 +389,31 @@ def register_routes(api, app, root='api'):
 ```
 
 Desde otro archivo importaremos esta función, y la llamaremos con el objeto `api` y la aplicación de Flask global.
+
+## API Response<a name="api_response"></a>
+
+Para simplificar la creación del cuerpo de la respuesta, se utilizara una clase llamada `ApiResponse` que deberá ser retornada por los metodos de los `Controllers`. La clase recibira el valor de la respuesta, y el codigo de respuesta. La misma creara luego, internamente, la estructura acorde para la respuesta.
+
+Esto simplificara las tareas de agregar links para la paginación, y para agregar relaciones entre entidades de forma centralizada.
+
+**¿Como hacemos para que `flask` pueda procesar esta clase?**
+
+Sobrescribiendo el método `make_response` de `flask`. Este metodo es llamado previo a la construcción de la respuesta final hacia el cliente. Para poder sobrescribirlo, debemos crear una nueva clase que herede de `flask_restplus.Api`.
+
+```python
+from flask_restplus import Api
+
+from app.api_response import ApiResponse
+
+
+class ApiFlask(Api):
+    def make_response(self, rv, *args, **kwargs):
+        if isinstance(rv, ApiResponse):
+            return rv.to_response()
+        return Api.make_response(self, rv, *args, **kwargs)
+```
+
+Luego, utilizaremos esta clase para crear nuestra aplicación de `flask`.
 
 ## `create_app`<a name="create_app"></a>
 
