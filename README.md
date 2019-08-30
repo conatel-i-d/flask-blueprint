@@ -31,10 +31,6 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
   - [Slides deck](https://speakerdeck.com/mitsuhiko/flask-for-fun-and-profit?slide=42)
 - [Blog "Flask best practises", AJ Pryor, http://alanpryorjr.com](http://alanpryorjr.com/2019-05-20-flask-api-example/)
 
-## Consideraciones<a name="considerations"></a>
-
-- Utiliza la librería [`flask_accepts`](https://github.com/apryor6/flask_accepts) que tiene pocos usuarios. De todas maneras el codigo es simple, y no debería ser dificil de solucionar en caso de que ocurran bugs. 
-
 ## Librerías<a name="libraries"></a>
 
 - [`flask`](https://palletsprojects.com/p/flask/)
@@ -42,7 +38,6 @@ Este proyecto esta fuertemente inspirado por los siguientes recursos:
 - [`marshmallow`](https://marshmallow.readthedocs.io/en/3.0/)
 - [`sqlalchemy`](https://www.sqlalchemy.org/)
 - [`flask-restplus`](https://flask-restplus.readthedocs.io/en/stable/)
-- [`flask_accepts`](https://github.com/apryor6/flask_accepts)
 - [`alembic`](https://alembic.sqlalchemy.org)
 
 ## Estructura<a name="structure"></a>
@@ -53,7 +48,7 @@ La unidad básica de una API es un `entity`, que corresponde a "aquello sobre lo
 
 - `Model`: Representación de Python de la `entity`.
 - `Controller`: Orquesta las rutas, servicios y esquemas de la `entity`.
-- `Schema`: Serializa y deserializa `entities`.
+- `Interfaces`: Serializa y deserializa los menajes para manipular las `entities`. También sirve para documentar las interfaces.
 - `Service`: Manipula `entities`. Por ejemplo, operaciones CRUD.
 
 Los archivos de prueba de cada entidad deben existir en conjunto con los archivos de la aplicación.
@@ -67,8 +62,7 @@ La estructura final será similar a la siguiente:
   controller_test.py
   model.py
   model_test.py
-  schema.py
-  schema_test.py
+  interfaces.py
   service.py
   service_test.py
 ```
@@ -114,23 +108,68 @@ def test_Entity_create(entity: Entity):
     assert entity
 ```
 
-### `Schemas`<a name="schemas"></a>
+### `Interfaces`<a name="interfaces"></a>
 
-_Serializa y deserializa `entities`._
+_Serializa y deserializa los menajes para manipular las `entities`. También sirve para documentar las interfaces._
 
-Utilizaremos `marshmallow` para serializar y deserializar `entities`. En partícular, utilizaremos los `Schemas` para realizar los cambios de nombres correspondientes de nuestras variables. En JSON y JavaScript, se suele utilizar `camelCase` para definir el nombre de las variables, mientras que en Python se usa `snake_case`.
+Utilizaremos `marshmallow` para serializar y deserializar `entities`. En partícular, utilizaremos el objeto `Interfaces` para realizar los cambios de nombres correspondientes de nuestras variables. En JSON y JavaScript, se suele utilizar `camelCase` para definir el nombre de las variables, mientras que en Python se usa `snake_case`.
 
 ```python
-from marshmallow import fields, Schema
+from app.utils.base_interfaces_test import BaseInterfaces, marshmallow_fields, restplus_fields
 
-class EntitySchema(Schema):
+class EntityInterfaces(BaseInterfaces):
     ''' Entity Schema '''
-    id = fields.Number(attribute='id')
-    name = fields.String(attribute='name')
-    camelCase = fields.string(attribute='snake_case')
+    __name__ = 'Entity'
+    id = dict(
+        m=marshmallow_fields.Int(attribute='id', dump_only=True),
+        r=restplus_fields.Integer(description='Unique identifier', required=True, example=123),
+    )
+    name = dict(
+        m=marshmallow_fields.String(attribute='name'),
+        r=restplus_fields.String(description='Name of the entity', required=False, example='My entity'),
+    )
+    camelCase = dict(
+        m=marshmallow_fields.String(attribute='snake_case'),
+        r=restplus_fields.String(
+            description='Example of how to convert from camelCase to snake_case',
+            required=False,
+            example='Something'    
+        )
+    )
+    create_model_keys = ['name', 'camelCase']
+    update_model_keys = ['camelCase']
 ```
 
-_Los `Schemas` no tienen por que contar con una suite de pruebas._
+El objeto `Interfaces` hereda de la clase `BaseInterfaces`, creada a medida para este proyecto. La dificultad que intenta suplir, es el de tener que montar los esquemas de `marshmallow` y los modelos de `flask-restful`, para manipular los mensajes JSON, y documentar las interfaces.
+
+Esta clase espera que se le configuren todos los atributos, con sus configuraciones de `marshmallow` y `flask-restful`, identificados dentro de un diccionario bajo las llaves `m`, y `r` respectivamente. Luego al momento de crear una instancia de esta clase, quedarán disponibles distintos modelos y esquemas para simplificar la serialización/deserialización de los datos, y simplificar su documentación.
+
+A continuación se presenta la definicón de dicha clase, y los atributos disponibles:
+
+```txt
+This class simplifies the creation of `marshmallo` schemas, and 
+`flask_restplus` models to document the API.
+
+Args:
+    api (flask_restplus.Namespace): `flask_restplus` Namespace instance.
+    name (str, optional): Name of the entity.
+
+Attributes:
+    _api (flask_restplus.Namespace): `flask_restplus` Namespace instance.
+    __name__ (string): Name of the entity. Used as prefix for the model names.
+    _shcema (marshmallow.Schema): Dynamically generated `marshmallow` :class:`Schema`.
+    single_schema (marshmallow.Schema): `marshmallow` instance for a single entity.
+    many_shcema (marshmallow.Schema): `marshmallow` instance for a list of entities.
+    create_model_keys (:list:str): List of field names that creates the entity's create model.
+    update_model_keys (:list:str): List of field names that creates the entity's update model.
+    create_model (flask_restplus.Namespace.model): Entity's create model.
+    update_model (flask_restplus.Namespace.model): Entity's update model.
+    model (flask_resplus.Namespace.model): Entity's model.
+    single_response_model (flask_restplus.Namespace.model): Single entity's response model.
+    many_response_model (flask_restplus.Namespace.model): Multiple entity's response model.
+```
+
+_Las `Interfaces` no tienen por que contar con una suite de pruebas._
 
 ### Services<a name="services"></a>
 
