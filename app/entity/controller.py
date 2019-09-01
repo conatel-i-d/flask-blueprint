@@ -7,7 +7,26 @@ from .service import EntityService
 from .model import Entity
 from .interfaces import EntityInterfaces
 
-api = Namespace('Entity', description="Entity resources")
+api_description = """
+Recursos para la entidad de ejemplo `Entity`.
+
+La idea de esta entidad es mostrar como se pueden componer los recursos. 
+Por ahora solo cuenta con metodos `CRUD` pero la idea es mostrar como extender
+este comportamiento.
+
+El ejemplo también esta pensado para mostrar como se puede construir la documentación
+de forma automatica usando los decoradores correspondientes.
+
+Para obtener una guía de como construir la documentación utilizando `flask_restplus`
+mirar el siguiente link:
+
+[`flask_restplus` - Swagger Documentation](https://flask-restplus.readthedocs.io/en/stable/swagger.html)
+
+Se incluyeron múltiples tipos de respuesta para mostrar como los decoradores pueden aplicarse tanto
+a nivel de la clase `Resource` como a nivel de método. 
+"""
+
+api = Namespace('Entity', description=api_description)
 interfaces = EntityInterfaces(api)
 
 @api.route("/")
@@ -38,7 +57,17 @@ class EntityResource(Resource):
     @api.response(200, 'New Entity', interfaces.single_response_model)
     def post(self) -> Entity:
         """
-        Create a single Entity
+        Creates a single Entity
+
+        La primera oración de este `docstring` se coloca como título del `endpoint`.
+        Despues se puede incluir todo el detalle a continuación.
+
+        Por defecto, se acepta Markdown para construir estos menajes. Hasta se pueden
+        incluir tablas:
+
+        | Columna 1 | Columna 2  | Columna 3|
+        |---|---|---|
+        | Valor 1 | Valor 2 | Valor 3|
         """
         json_data = request.get_json()
         if json_data is None:
