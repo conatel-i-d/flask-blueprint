@@ -415,6 +415,59 @@ class ApiFlask(Api):
 
 Luego, utilizaremos esta clase para crear nuestra aplicación de `flask`.
 
+## Errors<a name="errors"></a>
+
+Para los errores podemos hacer algo parecido. Los errores pueden contar con logica compartida, mismos codigos de error, o una misma estructura. Para simplificar como se emiten estos errores, los mismos se tirarán utilizando una clase especial llamada `ApiException`.
+
+```python
+from werkzeug.exceptions import HTTPException
+
+from app.api_response import ApiResponse
+
+class ApiException(HTTPException):
+    def __init__(self, message, code=400):
+        self.message = message
+        self.code = code
+
+    def to_response(self):
+        return ApiResponse({'message': self.message}, status=self.code)
+```
+
+Lo que queda es indicarle a `flask` como reaccionar cunado se enfrenta con una excepción. Para eso utilizamos la función `register_error_handlers`.
+
+```python
+def register_error_handlers(app):
+    app.register_error_handler(ApiException, lambda err: err.to_response())
+```
+
+Cuando `flask` detecte un error de tipo `ApiException`, correrá el código indicado en la función Lambda.
+
+**¿Como lo utilizamos?**
+
+```python
+from flask import request
+from flask_restplus import Namespace, Resource, fields
+from flask.wrappers import Response
+
+from app.api_response import ApiResponse
+from app.api_exception import ApiException
+
+api = Namespace('Math', description="Math resources")
+
+@api.route("/sum")
+class MathResource(Resource):
+    """Math sum resource"""
+
+    @api.response(200, 'Sum result')
+    def get(self) -> ApiResponse:
+        """Returns the sim result"""
+        a = request.args('a', type=int)
+        b = request.args('b', type=int)
+        if a is None or b is None:
+            raise ApiException('Numbers must be integers')
+        return ApiResult({'result': a + b})     
+```
+
 ## `create_app`<a name="create_app"></a>
 
 Para poder testear correctamente la API, necesitamos una forma sencilla de crearla. Un patron utilizado en Flask es crear un metodo llamado `create_app` que cree la API, consumiendo una lista de configuraciones.

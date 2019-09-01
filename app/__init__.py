@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import Resource, fields
 
 from app.api_flask import ApiFlask
+from app.api_exception import ApiException
 
 db = SQLAlchemy()
 

@@ -1,8 +1,6 @@
 from flask import request
-from flask_accepts import accepts, responds
 from flask_restplus import Namespace, Resource, fields
 from flask.wrappers import Response
-from typing import List
 
 from app.api_response import ApiResponse
 from .service import EntityService
