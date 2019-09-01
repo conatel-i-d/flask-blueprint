@@ -23,6 +23,7 @@ class BaseInterfaces(object):
         model (flask_resplus.Namespace.model): Entity's model.
         single_response_model (flask_restplus.Namespace.model): Single entity's response model.
         many_response_model (flask_restplus.Namespace.model): Multiple entity's response model.
+        error_response_model (flask_restplus.Namespace.model): Error response model.
     """
 
     def __init__(self, api, name=''):
@@ -38,6 +39,7 @@ class BaseInterfaces(object):
         self.model = self._api.model(self.__name__, self.get_restplus_fields(self.get_restplus_fields_keys()))
         self.single_response_model = self.create_single_response_model()
         self.many_response_model = self.create_many_response_model()
+        self.error_response_model = self.create_error_response_model()
 
     def get_restplus_fields(self, keys):
         """Returns a dictionary of `flask_restplus fields.
@@ -129,4 +131,14 @@ class BaseInterfaces(object):
         return self._api.model(self.__name__ + 'ManyResponse', dict(
             items=restplus_fields.List(restplus_fields.Nested(self.model)),
             count=restplus_fields.Integer
+        ))
+
+    def create_error_response_model(self):
+        """Creates the error response model
+        
+        Returns:
+            A `flask_restplus.Namespace.model` for an error response
+        """
+        return self._api.model(self.__name__ + 'ErrorResponse', dict(
+            message=restplus_fields.String(description='Error message', example='Something went wrong'),
         ))

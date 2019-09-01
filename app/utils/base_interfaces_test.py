@@ -93,3 +93,7 @@ def test_single_response_model_is_valid(child):
 def test_many_response_model_is_valid(child):
     print(child.many_response_model)
     assert str(child.many_response_model) == 'Model(TestManyResponse,{items,count})'
+
+def test_error_response_model_is_valid(child):
+    print(child.error_response_model)
+    assert str(child.error_response_model) == 'Model(TestErrorResponse,{message})'

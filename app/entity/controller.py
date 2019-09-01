@@ -11,6 +11,14 @@ api = Namespace('Entity', description="Entity resources")
 interfaces = EntityInterfaces(api)
 
 @api.route("/")
+@api.response(400, 'Bad Request', interfaces.error_response_model)
+@api.doc(responses={
+    401: 'Unauthorized',
+    403: 'Forbidden',
+    500: 'Internal server error',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable',
+})
 class EntityResource(Resource):
     """
     Entity Resource
@@ -43,6 +51,14 @@ class EntityResource(Resource):
 
 @api.route("/<int:id>")
 @api.param("id", "Entity unique identifier")
+@api.response(400, 'Bad Request', interfaces.error_response_model)
+@api.doc(responses={
+    401: 'Unauthorized',
+    403: 'Forbidden',
+    500: 'Internal server error',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable',
+})
 class EntityIdResource(Resource):
     @api.response(200, 'Wanted entity', interfaces.single_response_model)
     def get(self, id: int) -> Entity:
