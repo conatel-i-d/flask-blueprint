@@ -15,13 +15,24 @@ Blueprint para la creación de APIs con Flask
   - [`Controller`](#controller)
   - [Declaración de rutas](#route_declaration)
 - [API Response](#api_response)
+- [Paginación](#pagination)
+- [Orden](#order)
+- [Filtros](#filters)
+- [Busqueda](#search)
+- [Errors](#errors)
+- [Autenticación](#authentiaction)
+- [Authorización](#authorization)
 - [`create_app`](#create_app)
 - [Fixtures](#fixtures)
 - [Run `dev`](#run)
 - [Tests](#test)
 - [Swagger](#swagger)
 - [Migraciones](#migrations)
-  - [Uso de `alembic`](#alembic_use) 
+  - [Uso de `alembic`](#alembic_use)
+- [Puesta en producción](#production)
+  - [Docker Compose](#production_docker_compose)
+  - [Kubernetes](#production_kubernetes)
+  - [AWS Lambda](#production_aws_lambda) 
 
 ## Inspiración<a name="inspiration"></a>
 
@@ -415,6 +426,23 @@ class ApiFlask(Api):
 
 Luego, utilizaremos esta clase para crear nuestra aplicación de `flask`.
 
+## Paginación<a name="pagination"></a>
+
+TODO
+
+## Orden<a name="order"></a>
+
+TODO
+
+## Filtros<a name="filters"></a>
+
+TODO
+
+## Busqueda<a name="search"></a>
+
+TODO
+
+
 ## Errors<a name="errors"></a>
 
 Para los errores podemos hacer algo parecido. Los errores pueden contar con logica compartida, mismos codigos de error, o una misma estructura. Para simplificar como se emiten estos errores, los mismos se tirarán utilizando una clase especial llamada `ApiException`.
@@ -772,8 +800,21 @@ Existen otros comandos útiles que `alembic` nos provee:
     alembic downgrade base
     ```
 
+## Puesta en producción<a name="production"></a>
+  
+TODO
 
+### Docker Compose <a name="production_docker_compose"></a>
 
+TODO
+
+### Kubernetes <a name="production_kubernetes"></a>
+
+TODO
+
+### AWS Lambda <a name="production_aws_lambda"></a>
+
+TODO
 
 
 
