@@ -3,6 +3,7 @@ from flask_restplus import Namespace, Resource, fields
 from flask.wrappers import Response
 
 from app.api_response import ApiResponse
+from app.utils.decorators import parse_query_parameters
 from .service import EntityService
 from .model import Entity
 from .interfaces import EntityInterfaces
@@ -44,6 +45,7 @@ class EntityResource(Resource):
     """
 
     @api.response(200, 'Entity List', interfaces.many_response_model)
+    @parse_query_parameters
     def get(self) -> ApiResponse:
         """
         Returns the list of entities
