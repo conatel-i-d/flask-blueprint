@@ -10,7 +10,10 @@ class ApiResponse(object):
 
     def to_response(self):
         if self.value == None:
-            return Response('', status=self.status)
+            return Response('', status=self.status, mimetype='application/json')
+        if self.status == 400:
+            return Response(json.dumps(self.value), status=self.status,
+                    mimetype='application/json')
         data = {}
         if isinstance(self.value, dict):
             data['item'] = self.value

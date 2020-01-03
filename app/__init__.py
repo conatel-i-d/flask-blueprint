@@ -16,7 +16,7 @@ def create_app(env=None):
     app = Flask(__name__, template_folder='./templates')
     config = config_by_name[env or "test"]
     app.config.from_object(config)
-    # Creacmos el objeto `api`
+    # Creamos el objeto `api`
     api_title = os.environ.get('APP_TITLE', config.TITLE)
     api_version = os.environ.get('APP_VERSION', config.VERSION)
     api_description = """
@@ -48,17 +48,19 @@ def create_app(env=None):
     register_error_handlers(app)
     # Inicializamos la base de datos
     db.init_app(app)
+    
     # Configuración de página de documentación
     @api.documentation
     # pylint: disable=unused-variable
     def custom_ui():
         return render_template('api_docs.html')
-        # return apidoc.ui_for(api)
     # Creamos una ruta para chequear la salud del sistema
+    
     @app.route('/healthz')
     # pylint: disable=unused-variable
     def healthz(): 
         """ Healthz endpoint """
         return jsonify({"ok": True})
+    
     # Retornamos la aplicación de Flask
     return app, api

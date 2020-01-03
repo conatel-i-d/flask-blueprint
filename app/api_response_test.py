@@ -9,7 +9,7 @@ def test_api_response_to_response_returns_a_response_object():
 
 def test_api_response_to_response_empty_value_mimetype():
     expected = ApiResponse(value=None).to_response()
-    assert expected.mimetype == 'text/html'
+    assert expected.mimetype == 'application/json'
 
 def test_api_response_to_response_default_status():
     expected = ApiResponse(value=None).to_response()
