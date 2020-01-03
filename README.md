@@ -289,6 +289,21 @@ def test_create(db: SQLAlchemy): # noqa
         assert getattr(results[0], key) == attributes[key]
 ```
 
+Para simplificar la creación de los `services` se creo una clase base llamada `BaseService`
+que integra la mayoría de casos típicos necesarios. Para crear un nuevo servicio con ella, 
+solo es necesario extenderla, y configurar el `model` y sus `interfaces`.
+
+```python
+from app.utils.base_service import BaseService
+from .model import Entity
+from .interfaces import EntityInterfaces
+
+
+class EntityService(BaseService):
+    model = Entity
+    interfaces = EntityInterfaces
+```
+
 ### Controller<a name="controller"></a>
 
 _Orquesta las rutas, servicios y esquemas de la `entity`._
