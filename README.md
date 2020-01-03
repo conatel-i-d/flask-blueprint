@@ -428,7 +428,44 @@ Luego, utilizaremos esta clase para crear nuestra aplicación de `flask`.
 
 ## Paginación<a name="pagination"></a>
 
-TODO
+Para manejar la paginación de los recursos, es necesario configurar los
+`services` para que utilicen la función `paginate` de `flask_sqlalchemy.query`.
+Esta función espera recibir una página y la cantidad de elementos por página.
+Los mismos se configuran ingresando las variables `page` y `per_page`. 
+
+Por defecto, dentro del archivo de configuración de la aplicació se pueden
+encontrar los valores por defecto para estas opciones.
+
+Para modificar las mismas es necesario pasar `query parameters` junto con la
+consulta. Por ejemplo, un request a la siguiente url:
+
+```
+//api/entity/?page=2&per_page=30
+```
+
+Hará que se devuelvan los resultados de la segunda página, la cual contendrá un
+máximo de 30 elementos.
+
+Para simplificar el parseo de estos parámetros, se creo un decorador que se
+encarga de esto. El mismo se llama `parse_query_parameters` y se encuentra
+dentro de `app.utils.decorators`.
+
+```python
+@api.response(200, 'Entity List', interfaces.many_response_model)
+@parse_query_parameters
+  def get(self) -> ApiResponse:
+    """
+    Returns the list of entities
+    """
+    entities = EntityService.get_all()
+    return ApiResponse(interfaces.many_schema.dump(entities).data)
+```
+
+El valor de `per_page` puede ser configurado en cualquier valor por que existe
+una variable adicional llamada `max_per_page` que límita de forma general la
+cantidad máxima de elementos que se devolverán en cada llamada. Por ahora, no
+hay forma de modificar este valor en `runtime`. Solamente se encuentra
+configurado como un valor estatico dentro de la configuración de la aplicación.
 
 ## Orden<a name="order"></a>
 

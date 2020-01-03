@@ -4,7 +4,7 @@ from alembic import command
 
 from app import create_app
 
-FLASK_ENV = os.environ.get('FLASK_ENV', 'test')
+FLASK_ENV = os.environ.get('FLASK_ENV', 'dev')
 FLASK_PORT = os.environ.get('FLASK_PORT', '8080')
 FLASK_HOST = os.environ.get('FLASK_HOST', '0.0.0.0')
 

@@ -4,17 +4,18 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import Resource, apidoc
 
 from app.api_flask import ApiFlask
+from app.utils.decorators import parse_query_parameters
 
 db = SQLAlchemy()
 
 
 def create_app(env=None):
-    from app.config import config_by_name
+    from app.config import get_config
     from app.routes import register_routes
     from app.errors import register_error_handlers
     # Creamos la aplicación de Flask
     app = Flask(__name__, template_folder='./templates')
-    config = config_by_name[env or "test"]
+    config = get_config(env)
     app.config.from_object(config)
     # Creamos el objeto `api`
     api_title = os.environ.get('APP_TITLE', config.TITLE)
@@ -48,15 +49,17 @@ def create_app(env=None):
     register_error_handlers(app)
     # Inicializamos la base de datos
     db.init_app(app)
-    
+   
     # Configuración de página de documentación
     @api.documentation
     # pylint: disable=unused-variable
     def custom_ui():
         return render_template('api_docs.html')
-    # Creamos una ruta para chequear la salud del sistema
-    
+
+    # Creamos una ruta para chequear la salud del sistema 
     @app.route('/healthz')
+    @api.response(200, 'OK')
+    @parse_query_parameters
     # pylint: disable=unused-variable
     def healthz(): 
         """ Healthz endpoint """

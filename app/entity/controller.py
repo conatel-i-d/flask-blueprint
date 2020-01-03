@@ -4,6 +4,7 @@ from flask.wrappers import Response
 
 from app.api_response import ApiResponse
 from app.utils.decorators import parse_query_parameters
+from app.utils.helpers import index_query_params
 from .service import EntityService
 from .model import Entity
 from .interfaces import EntityInterfaces
@@ -43,16 +44,15 @@ class EntityResource(Resource):
     """
     Entity Resource
     """
-
+    
     @api.response(200, 'Entity List', interfaces.many_response_model)
+    @api.doc(params=index_query_params)
     @parse_query_parameters
     def get(self) -> ApiResponse:
         """
         Returns the list of entities
         """
         entities = EntityService.get_all()
-        print('entities[0]["snake_case"] =' , getattr(entities[0], 'snake_case'))
-        print(interfaces.many_schema)
         return ApiResponse(interfaces.many_schema.dump(entities).data)
 
     @api.expect(interfaces.create_model)
