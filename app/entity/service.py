@@ -1,7 +1,7 @@
-from flask import g, current_app
 from typing import List
 
 from app import db
+from app.utils.query import Query
 from .model import Entity
 
 
@@ -12,10 +12,10 @@ class EntityService:
         Returns all the entities paginated
         """
         return Entity.query.paginate(
-            page=g.get('page', current_app.config.get('PAGE')),
-            per_page=g.get('per_page', current_app.config.get('PER_PAGE')),
+            page=Query.get_param('page'),
+            per_page=Query.get_param('per_page'),
             error_out=False,
-            max_per_page=current_app.config.get('MAX_PER_PAGE')
+            max_per_page=Query.get_param('max_per_page')
         ).items
 
     @staticmethod

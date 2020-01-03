@@ -39,10 +39,10 @@ class TestEntityResource:
                     {'id': 123, 'name': 'Test Entity 1', 'purpose': 'Test purpose', 'camelCase': 'Something'},
                     {'id': 456, 'name': 'Test Entity 2', 'purpose': 'Test purpose', 'camelCase': 'Something'}
                 ],
-                count=2
+                count=2,
+                current='http://localhost/api/entity/?page=1&per_page=3',
+                next='http://localhost/api/entity/?page=2&per_page=3'
             )
-            print(f"result = ", result)
-            print(f"expected = ", expected)
             assert result == expected
     
     @patch.object(

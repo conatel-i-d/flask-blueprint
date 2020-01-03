@@ -4,7 +4,7 @@ from flask.wrappers import Response
 
 from app.api_response import ApiResponse
 from app.utils.decorators import parse_query_parameters
-from app.utils.helpers import index_query_params
+from app.utils.query import Query
 from .service import EntityService
 from .model import Entity
 from .interfaces import EntityInterfaces
@@ -46,7 +46,7 @@ class EntityResource(Resource):
     """
     
     @api.response(200, 'Entity List', interfaces.many_response_model)
-    @api.doc(params=index_query_params)
+    @api.doc(params=Query.index_query_params)
     @parse_query_parameters
     def get(self) -> ApiResponse:
         """

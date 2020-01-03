@@ -1,7 +1,7 @@
 .PHONY: test run migration
 
 test:
-	pytest --disable-warnings --maxfail 1
+	pytest --disable-warnings --maxfail 1 -v
 
 build-dev:
 	docker build -t conatel-i-d/flask-blueprint:dev -f Dockerfile.dev .
