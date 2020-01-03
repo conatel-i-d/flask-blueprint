@@ -13,7 +13,17 @@ class BaseService:
         Returns all the items paginated. The `page`, `per_page`, and `max_per_page`
         are gotten from Flask scope.
         """
-        return cls.model.query.paginate(
+        query = cls.model.query
+        order_by = Query.get_param('order_by')
+        order_dir = Query.get_param('order_dir')
+        table_name = cls.model.__tablename__
+        columns = [column.name for column in cls.model.metadata.tables[table_name].columns]
+        if order_by is not None and order_by in columns:
+            if order_dir == 'desc':
+                query = query.order_by(getattr(cls.model, order_by).desc())
+            else:
+                query = query.order_by(getattr(cls.model, order_by).asc())
+        return query.paginate(
             page=Query.get_param('page'),
             per_page=Query.get_param('per_page'),
             error_out=False,

@@ -130,7 +130,10 @@ class BaseInterfaces(object):
         """
         return self._api.model(self.__name__ + 'ManyResponse', dict(
             items=restplus_fields.List(restplus_fields.Nested(self.model)),
-            count=restplus_fields.Integer
+            count=restplus_fields.Integer,
+            current=restplus_fields.Url(example="https://api/example/?page=2&per_page=10&order_by=id&order_dir=asc"),
+            prev=restplus_fields.Url(example="https://api/example/?page=1&per_page=10&order_by=id&order_dir=asc"),
+            next=restplus_fields.Url(example="https://api/example/?page=3&per_page=10&order_by=id&order_dir=asc")
         ))
 
     def create_error_response_model(self):

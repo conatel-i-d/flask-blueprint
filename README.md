@@ -455,7 +455,7 @@ Para modificar las mismas es necesario pasar `query parameters` junto con la
 consulta. Por ejemplo, un request a la siguiente url:
 
 ```
-//api/entity/?page=2&per_page=30
+https://api/entity/?page=2&per_page=30
 ```
 
 Hará que se devuelvan los resultados de la segunda página, la cual contendrá un
@@ -484,7 +484,26 @@ configurado como un valor estatico dentro de la configuración de la aplicación
 
 ## Orden<a name="order"></a>
 
-TODO
+Para manejar el órden de los resultados se utiliza la función `order_by` the
+SQLAlchemy. Se puede indicar a través de que columna ordenar los datos
+configurando el parámetro `order_by` de la consulta.
+
+Por ejemplo:
+
+```
+https://api/entity/?order_by=name
+```
+
+La dirección se configura de forma similar utilizando el parámetro `order_dir`.
+Por defecto el valor de este parámetro es `asc`. Si se configura como `desc` se
+ordenerán los resultados de forma descendiente.
+
+```
+https://api/entity/?order_by=name&order_dir=desc
+```
+
+Estos parámetros son configurados automaticamente en una ruta configurando el
+decorador `parse_query_parameters`.
 
 ## Filtros<a name="filters"></a>
 
