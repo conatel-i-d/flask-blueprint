@@ -2,6 +2,12 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+PUBLIC_KEY = f"""
+-----BEGIN PUBLIC KEY----- 
+{os.environ.get('PUBLIC_KEY')}
+-----END PUBLIC KEY-----
+"""
+
 class BaseConfig:
     TITLE = 'Api'
     VERSION = '0.0.1'
@@ -12,6 +18,8 @@ class BaseConfig:
     PAGE = 1
     PER_PAGE = 20
     MAX_PER_PAGE = 100
+    AUDIENCE = 'api'
+    PUBLIC_KEY = PUBLIC_KEY
    
 class DevelopmentConfig(BaseConfig):
     CONFIG_NAME = 'dev'

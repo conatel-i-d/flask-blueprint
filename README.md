@@ -20,7 +20,6 @@ Blueprint para la creación de APIs con Flask
 - [Filtros](#filters)
 - [Busqueda](#search)
 - [Errors](#errors)
-- [Autenticación](#authentiaction)
 - [Authorización](#authorization)
 - [`create_app`](#create_app)
 - [Fixtures](#fixtures)
@@ -513,6 +512,31 @@ TODO
 
 TODO
 
+## Autorización<a name="authorization"></a>
+
+Para asegurar rutas, lo único que hay que hacer es agregar el decorador `authorize`
+al método encargado de manejar esta ruta. El decorador puede encontrarse en
+`app.utils.authorize`.
+
+```python
+# ...
+from app.utils.authorize import authorize
+# ...
+
+class EntityIdResource(Resource):
+    @api.response(200, 'Wanted entity', interfaces.single_response_model)
+    @authorize
+    def get(self, id: int) -> Entity:
+        """
+        Get a single Entity
+        """
+        entity = EntityService.get_by_id(id)
+        return ApiResponse(interfaces.single_schema.dump(entity).data)
+```
+
+Solo se podrá llamar al recurso administrado por la función anterior, si el
+`request` cuenta con un `jwt` valido dentro del Header `Token`. Sin el mismo
+no se podrá acceder a este recurso.
 
 ## Errors<a name="errors"></a>
 
