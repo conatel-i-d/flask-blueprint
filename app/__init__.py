@@ -41,6 +41,13 @@ def create_app(env=None):
         description=api_description,
         license='MIT',
         licence_url='https://opensource.org/licenses/MIT',
+        authorizations = {
+            'apiKey': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'X-API-KEY'
+            }
+        },
         endpoint='',
     )
     # Registramos las rutas

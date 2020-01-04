@@ -13,7 +13,7 @@ def authorize(func):
     def authorize_handler(*args, **kwargs):
         public_key = current_app.config['PUBLIC_KEY']
         audience = current_app.config['AUDIENCE']
-        token = request.headers.get('Token')
+        token = request.headers.get('X-API-Key')
         if not public_key:
             raise ApiException(f'Public key is undefined', code='NotAuthorized')
         if not audience:

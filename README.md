@@ -524,7 +524,8 @@ from app.utils.authorize import authorize
 # ...
 
 class EntityIdResource(Resource):
-    @api.response(200, 'Wanted entity', interfaces.single_response_model)
+    @api.doc(security='apikey')
+    @api.response(200, 'Wanted entity', interfaces.single_response_model)\
     @authorize
     def get(self, id: int) -> Entity:
         """
@@ -535,8 +536,38 @@ class EntityIdResource(Resource):
 ```
 
 Solo se podrá llamar al recurso administrado por la función anterior, si el
-`request` cuenta con un `jwt` valido dentro del Header `Token`. Sin el mismo
+`request` cuenta con un `jwt` valido dentro del Header `X-API-Key`. Sin el mismo
 no se podrá acceder a este recurso.
+
+Además del decorador para asegurar el endpoint, es necesario agregar un decorador
+adicional, para indicar en la documentación que este endpoint esta protegido:
+
+```python
+@api.doc(security='apikey')
+```
+
+La configuración de `apiKey` se realiza al momento de crear la API dentro del
+metodo `create_app`:
+
+```python
+    # ...
+    api = ApiFlask(app, 
+        title=api_title, 
+        version=api_version, 
+        description=api_description,
+        license='MIT',
+        licence_url='https://opensource.org/licenses/MIT',
+        authorizations = {
+            'apiKey': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'X-API-KEY'
+            }
+        },
+        endpoint='',
+    )
+    # ...
+```
 
 ## Errors<a name="errors"></a>
 

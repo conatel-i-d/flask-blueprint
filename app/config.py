@@ -18,7 +18,7 @@ class BaseConfig:
     PAGE = 1
     PER_PAGE = 20
     MAX_PER_PAGE = 100
-    AUDIENCE = 'api'
+    AUDIENCE = os.environ.get('AUDIENCE', 'api')
     PUBLIC_KEY = PUBLIC_KEY
    
 class DevelopmentConfig(BaseConfig):
